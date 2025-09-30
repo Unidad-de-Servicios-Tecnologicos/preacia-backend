@@ -1,4 +1,4 @@
-export const centrosPaths = {
+export const tipoDocumentoPaths = {
     '/tipo-documentos': {
         get: {
             tags: ['Tipo documentos'],
@@ -15,38 +15,21 @@ export const centrosPaths = {
                 },
                 {
                     in: 'query',
-                    name: 'codigo',
-                    schema: { type: 'string' },
-                    description: 'Filtrar por código del centro'
-                },
-                {
-                    in: 'query',
                     name: 'nombre',
                     schema: { type: 'string' },
-                    description: 'Filtrar por nombre del centro'
+                    description: 'Filtrar por nombre del tipo de documento'
                 },
-                {
-                    in: 'query',
-                    name: 'ciudad_id',
-                    schema: { type: 'integer' },
-                    description: 'Filtrar por ID de ciudad'
-                },
-                {
-                    in: 'query',
-                    name: 'regional_id',
-                    schema: { type: 'integer' },
-                    description: 'Filtrar por ID de regional'
-                },
+
                 {
                     in: 'query',
                     name: 'estado',
-                    schema: { type: 'string', enum: ['activo', 'inactivo'] },
-                    description: 'Filtrar por estado del centro'
+                    schema: { type: 'enum', enum: ['activo', 'inactivo'] },
+                    description: 'Filtrar por estado del tipo de documento'
                 },
                 {
                     in: 'query',
                     name: 'sortBy',
-                    schema: { type: 'string', enum: ['codigo', 'nombre', 'estado'] },
+                    schema: { type: 'string', enum: ['nombre', 'estado'] },
                     description: 'Campo por el cual ordenar'
                 },
                 {
@@ -70,7 +53,7 @@ export const centrosPaths = {
             ],
             responses: {
                 200: {
-                    description: 'Lista de centros obtenida exitosamente',
+                    description: 'Lista de tipos de documentos obtenida exitosamente',
                     content: {
                         'application/json': {
                             schema: {
@@ -78,7 +61,7 @@ export const centrosPaths = {
                                 properties: {
                                     data: {
                                         type: 'array',
-                                        items: { $ref: '#/components/schemas/Centro' }
+                                        items: { $ref: '#/components/schemas/TipoDocumento' }
                                     },
                                     meta: {
                                         type: 'object',
@@ -89,7 +72,7 @@ export const centrosPaths = {
                                     links: {
                                         type: 'object',
                                         properties: {
-                                            self: { type: 'string', example: 'http://localhost:3000/centros/?pagination=false' }
+                                            self: { type: 'string', example: 'http://localhost:3000/tipo-documentos/?pagination=false' }
                                         }
                                     }
                                 }
@@ -98,14 +81,12 @@ export const centrosPaths = {
                                 data: [
                                     {
                                         id: 1,
-                                        codigo: "CEN001",
-                                        nombre: "Centro de Biotecnología Industrial",
+                                        nombre: "Tipo de Documento 1",
                                         estado: "activo"
                                     },
                                     {
                                         id: 2,
-                                        codigo: "CEN002",
-                                        nombre: "Centro de Tecnologías de la Información",
+                                        nombre: "Tipo de Documento 2",
                                         estado: "activo"
                                     }
                                 ],
@@ -113,7 +94,7 @@ export const centrosPaths = {
                                     total: 2
                                 },
                                 links: {
-                                    self: "http://localhost:3000/centros/?pagination=false"
+                                    self: "http://localhost:3000/tipo-documentos/?pagination=false"
                                 }
                             }
                         }
@@ -122,9 +103,9 @@ export const centrosPaths = {
             }
         },
         post: {
-            tags: ['Centros'],
-            summary: 'Crear un nuevo centro',
-            description: 'Crea un nuevo centro en el sistema.',
+            tags: ['Tipo documentos'],
+            summary: 'Crear un nuevo tipo de documento',
+            description: 'Crea un nuevo tipo de documento en el sistema.',
             security: [{ bearerAuth: [] }],
             parameters: [
                 {
@@ -146,26 +127,25 @@ export const centrosPaths = {
                 required: true,
                 content: {
                     'application/json': {
-                        schema: { $ref: '#/components/schemas/CentroInput' }
+                        schema: { $ref: '#/components/schemas/TipoDocumento' }
                     }
                 }
             },
             responses: {
                 201: {
-                    description: 'Centro creado exitosamente',
+                    description: 'Tipo de documento creado exitosamente',
                     content: {
                         'application/json': {
                             schema: {
                                 type: 'object',
                                 properties: {
-                                    data: { $ref: '#/components/schemas/Centro' }
+                                    data: { $ref: '#/components/schemas/TipoDocumento' }
                                 }
                             },
                             example: {
                                 data: {
                                     id: 3,
-                                    codigo: "CEN003",
-                                    nombre: "Nuevo Centro",
+                                    nombre: "Nuevo Tipo de Documento",
                                     estado: "activo"
                                 }
                             }
@@ -175,12 +155,12 @@ export const centrosPaths = {
             }
         }
     },
-    '/centros/{codigo}': {
+    '/tipo-documentos/{id}': {
         get: {
-            tags: ['Centros'],
-            summary: 'Obtener un centro por código',
-            description: 'Devuelve un centro específico según su código.',
-            security: [{ bearerAuth: [] }],
+            tags: ['Tipo documentos'],
+            summary: 'Obtener un tipo de documento por ID',
+            description: 'Devuelve un tipo de documento específico según su ID.',
+            security: [{ bearerAuth: [] }], 
             parameters: [
                 {
                     in: 'header',
@@ -191,28 +171,27 @@ export const centrosPaths = {
                 },
                 {
                     in: 'path',
-                    name: 'codigo',
+                    name: 'id',
                     required: true,
                     schema: { type: 'string' },
-                    description: 'Código del centro a consultar'
+                    description: 'ID del tipo de documento a consultar'
                 }
             ],
             responses: {
                 200: {
-                    description: 'Centro obtenido exitosamente',
+                    description: 'Tipo de documento obtenido exitosamente',
                     content: {
                         'application/json': {
                             schema: {
                                 type: 'object',
                                 properties: {
-                                    data: { $ref: '#/components/schemas/Centro' }
+                                    data: { $ref: '#/components/schemas/TipoDocumento' }
                                 }
                             },
                             example: {
                                 data: {
                                     id: 1,
-                                    codigo: "CEN001",
-                                    nombre: "Centro de Biotecnología Industrial",
+                                    nombre: "Tipo de Documento 1",
                                     estado: "activo"
                                 }
                             }
@@ -222,9 +201,9 @@ export const centrosPaths = {
             }
         },
         put: {
-            tags: ['Centros'],
-            summary: 'Actualizar un centro por código',
-            description: 'Actualiza un centro específico según su código.',
+            tags: ['Tipo documentos'],
+            summary: 'Actualizar un tipo de documento por ID',
+            description: 'Actualiza un tipo de documento específico según su ID.',
             security: [{ bearerAuth: [] }],
             parameters: [
                 {
@@ -233,39 +212,38 @@ export const centrosPaths = {
                     required: true,
                     schema: { type: 'string', example: 'Bearer <access_token>' },
                     description: 'Token de acceso en formato Bearer'
-                },
+                },  
                 {
                     in: 'path',
-                    name: 'codigo',
+                    name: 'id',
                     required: true,
                     schema: { type: 'string' },
-                    description: 'Código del centro a actualizar'
+                    description: 'ID del tipo de documento a actualizar'
                 }
             ],
             requestBody: {
                 required: true,
                 content: {
                     'application/json': {
-                        schema: { $ref: '#/components/schemas/CentroUpdate' }
+                        schema: { $ref: '#/components/schemas/TipoDocumento' }
                     }
                 }
             },
             responses: {
                 200: {
-                    description: 'Centro actualizado exitosamente',
+                    description: 'Tipo de documento actualizado exitosamente',
                     content: {
                         'application/json': {
                             schema: {
                                 type: 'object',
                                 properties: {
-                                    data: { $ref: '#/components/schemas/Centro' }
+                                    data: { $ref: '#/components/schemas/TipoDocumento' }
                                 }
                             },
                             example: {
                                 data: {
                                     id: 1,
-                                    codigo: "CEN001",
-                                    nombre: "Centro Actualizado",
+                                    nombre: "Tipo de Documento Actualizado",
                                     estado: "activo"
                                 }
                             }
@@ -275,11 +253,11 @@ export const centrosPaths = {
             }
         }
     },
-    '/centros/{codigo}/estado': {
+    '/tipo-documentos/{id}/estado': {
         patch: {
-            tags: ['Centros'],
-            summary: 'Cambiar el estado de un centro',
-            description: 'Cambia el estado de un centro específico según su código.',
+            tags: ['Tipo documentos'],
+            summary: 'Cambiar el estado de un tipo de documento',
+            description: 'Cambia el estado de un tipo de documento específico según su ID.',
             security: [{ bearerAuth: [] }],
             parameters: [
                 {
@@ -291,10 +269,10 @@ export const centrosPaths = {
                 },
                 {
                     in: 'path',
-                    name: 'codigo',
+                    name: 'id',
                     required: true,
                     schema: { type: 'string' },
-                    description: 'Código del centro a modificar estado'
+                    description: 'ID del tipo de documento a modificar estado'
                 }
             ],
             requestBody: {
@@ -313,20 +291,19 @@ export const centrosPaths = {
             },
             responses: {
                 200: {
-                    description: 'Estado del centro actualizado exitosamente',
+                    description: 'Estado del tipo de documento actualizado exitosamente',
                     content: {
                         'application/json': {
                             schema: {
                                 type: 'object',
-                                properties: {
-                                    data: { $ref: '#/components/schemas/Centro' }
+                                properties: {   
+                                    data: { $ref: '#/components/schemas/TipoDocumento' }
                                 }
                             },
                             example: {
                                 data: {
                                     id: 1,
-                                    codigo: "CEN001",
-                                    nombre: "Centro de Biotecnología Industrial",
+                                    nombre: "Tipo de Documento Actualizado",
                                     estado: "inactivo"
                                 }
                             }
@@ -336,15 +313,15 @@ export const centrosPaths = {
             }
         }
     },
-    '/centros/list': {
+    '/tipo-documentos/list': {
         get: {
-            tags: ['Centros'],
-            summary: 'Obtener lista simplificada de centros',
-            description: 'Devuelve una lista simplificada de centros activos.',
+            tags: ['Tipo documentos'],
+            summary: 'Obtener lista simplificada de tipos de documentos',
+            description: 'Devuelve una lista simplificada de tipos de documentos activos.',
             security: [{ bearerAuth: [] }],
             responses: {
                 200: {
-                    description: 'Lista simplificada de centros obtenida exitosamente',
+                    description: 'Lista simplificada de tipos de documentos obtenida exitosamente',
                     content: {
                         'application/json': {
                             schema: {
@@ -356,8 +333,7 @@ export const centrosPaths = {
                                             type: 'object',
                                             properties: {
                                                 id: { type: 'integer', example: 1 },
-                                                codigo: { type: 'string', example: 'CEN001' },
-                                                nombre: { type: 'string', example: 'Centro de Biotecnología Industrial' }
+                                                nombre: { type: 'string', example: 'Tipo de Documento 1' }
                                             }
                                         }
                                     }
@@ -365,8 +341,8 @@ export const centrosPaths = {
                             },
                             example: {
                                 data: [
-                                    { id: 1, codigo: "CEN001", nombre: "Centro de Biotecnología Industrial" },
-                                    { id: 2, codigo: "CEN002", nombre: "Centro de Tecnologías de la Información" }
+                                    { id: 1, nombre: "Tipo de Documento 1" },
+                                    { id: 2, nombre: "Tipo de Documento 2" }
                                 ]
                             }
                         }
