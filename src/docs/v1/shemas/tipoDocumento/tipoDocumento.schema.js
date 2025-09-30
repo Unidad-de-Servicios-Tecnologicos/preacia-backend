@@ -39,15 +39,15 @@ export const tipoDocumentoSchemas = {
 
 
 
-    CentrosPaginados: {
+    TipoDocumentosPaginados: {
         type: 'object',
         properties: {
-            centros: {
+            tipoDocumentos: {
                 type: 'array',
                 items: {
-                    $ref: '#/components/schemas/Centro'
+                    $ref: '#/components/schemas/TipoDocumento'
                 },
-                description: 'Lista de centros'
+                description: 'Lista de tipos de documentos'
             },
             totalPages: {
                 type: 'integer',

@@ -1,3 +1,8 @@
+import { loginPaths } from './paths/auth/login.path.js';
+import { registerPaths } from './paths/auth/register.path.js';
+import { forgotPasswordPaths } from './paths/auth/forgotPassword.path.js';
+import { resetPasswordPaths } from './paths/auth/resetPassword.path.js';
+import { refreshTokenPaths } from './paths/auth/refreshToken.path.js';
 import { tipoDocumentoPaths } from './paths/tipoDocumento/tipoDocumento.path.js';
 
 
@@ -19,6 +24,11 @@ export default {
         }
     ],
     paths: {
+        ...loginPaths,
+        ...registerPaths,
+        ...forgotPasswordPaths,
+        ...resetPasswordPaths,
+        ...refreshTokenPaths,
         ...tipoDocumentoPaths,
     },
     components: {
