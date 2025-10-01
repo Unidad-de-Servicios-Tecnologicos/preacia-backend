@@ -1,8 +1,7 @@
---datos para centros
-INSERT INTO centros (nombre, direccion, estado) VALUES ('Centro 1', 'Direccion 1', TRUE);
-INSERT INTO centros (nombre, direccion, estado) VALUES ('Centro 2', 'Direccion 2', TRUE);
-INSERT INTO centros (nombre, direccion, estado) VALUES ('Centro 3', 'Direccion 3', TRUE);
-
+-- datos para centros
+INSERT INTO centros (codigo, nombre, direccion, estado) VALUES ('C01','Centro 1', 'Direccion 1', TRUE);
+INSERT INTO centros (codigo, nombre, direccion, estado) VALUES ('C02','Centro 2', 'Direccion 2', TRUE);
+INSERT INTO centros (codigo, nombre, direccion, estado) VALUES ('C03','Centro 3', 'Direccion 3', TRUE);
 
 -- datos para tipo de documentos
 INSERT INTO tipo_documentos (nombre, estado) VALUES ('DNI', TRUE);
@@ -20,9 +19,9 @@ INSERT INTO permisos (nombre, descripcion, estado) VALUES ('Editar Usuario', 'Pe
 INSERT INTO permisos (nombre, descripcion, estado) VALUES ('Eliminar Usuario', 'Permiso para eliminar usuarios', TRUE);
 
 -- datos para usuarios
-INSERT INTO usuarios (nombre, email, password, estado) VALUES ('Administrador', 'admin@gmail.com', '123456', TRUE);
-INSERT INTO usuarios (nombre, email, password, estado) VALUES ('Empleado', 'empleado@gmail.com', '123456', TRUE);
-INSERT INTO usuarios (nombre, email, password, estado) VALUES ('Usuario', 'usuario@gmail.com', '123456', TRUE);
+INSERT INTO usuarios (nombre, tipo_documento_id, numero_documento, correo, contrasena, estado) VALUES ('Administrador', '1', '1000233255', 'admin@gmail.com', '123456', TRUE);
+INSERT INTO usuarios (nombre, tipo_documento_id, numero_documento, correo, contrasena, estado) VALUES ('Empleado', '2', '43655255', 'empleado@gmail.com', '123456', TRUE);
+INSERT INTO usuarios (nombre, tipo_documento_id, numero_documento, correo, contrasena, estado) VALUES ('Usuario', '3','1023333444', 'usuario@gmail.com', '123456', TRUE);
 
 -- datos para rol_permiso
 INSERT INTO rol_permiso (rol_id, permiso_id) VALUES (1, 1);
