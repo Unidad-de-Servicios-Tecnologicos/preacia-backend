@@ -52,10 +52,10 @@ export const registerUserService = async (data) => {
             id: usuario.id,
             documento: usuario.documento,
             nombres: usuario.nombres,
-            apellidos: usuario.apellidos,
-            nombre_usuario: usuario.nombre_usuario,
+            apellidos: usuario.apellido,
             correo: usuario.correo,
             telefono: usuario.telefono,
+            direccion: usuario.direccion,
             estado: usuario.estado,
             rol: {
                 id: usuario.rol_id,
@@ -72,7 +72,7 @@ export const loginUserService = async ({ login, contrasena }) => {
     const user = await findUserForLogin(login);
 
     if (!user) {
-        return { success: false, message: 'Usuario, documento o correo no encontrado.', status: 404 };
+        return { success: false, message: 'Usuario, numero de documento o correo no encontrado.', status: 404 };
     }
 
     if (!user.estado) {
@@ -85,6 +85,7 @@ export const loginUserService = async ({ login, contrasena }) => {
     }
 
     const rol_nombre = user.rol ? user.rol.nombre : null;
+    const tipo_documento_nombre = user.tipo_documento ? user.tipo_documento.nombre : null;
 
     // Combinar permisos del usuario y del rol
     const permisosUsuario = user.permisos || [];
@@ -129,10 +130,10 @@ export const loginUserService = async ({ login, contrasena }) => {
             id: user.id,
             documento: user.documento,
             nombres: user.nombres,
-            apellidos: user.apellidos,
-            nombre_usuario: user.nombre_usuario,
+            apellidos: user.apellido,
             correo: user.correo,
             telefono: user.telefono,
+            direccion: user.direccion,
             estado: user.estado,
             rol: {
                 id: user.rol_id,
@@ -148,7 +149,7 @@ export const loginUserService = async ({ login, contrasena }) => {
 
 export const forgotPasswordService = async ({ correo }) => {
     try {
-        const usuario = await findUserByEmail(correo);
+        const usuario = await findUserByEmail(correo, ['id', 'correo', 'nombre', 'estado', 'rol_id']);
 
         if (!usuario) {
             return { success: false, message: 'Correo inválido.', status: 404 };
@@ -162,7 +163,7 @@ export const forgotPasswordService = async ({ correo }) => {
             id: usuario.id,
             correo: usuario.correo,
             rol_id: usuario.rol_id,
-            rol_nombre: usuario.rol_nombre,
+            rol_nombre: usuario.rol ? usuario.rol.nombre : null,
             estado: usuario.estado
         });
 
@@ -243,7 +244,7 @@ export const refreshTokenService = async (refreshToken) => {
             id: usuario.id,
             correo: usuario.correo,
             rol_id: usuario.rol_id,
-            rol_nombre: usuario.rol_nombre,
+            rol_nombre: usuario.rol ? usuario.rol.nombre : null,
             estado: usuario.estado
         });
 
@@ -257,7 +258,7 @@ export const refreshTokenService = async (refreshToken) => {
 };
 
 export const createUserWithEmailSetupService = async (data) => {
-    const { rol_nombre, correo, documento, centro_id } = data;
+    const { rol_nombre, correo, documento } = data;
 
     let rolUsuario;
 
@@ -289,12 +290,6 @@ export const createUserWithEmailSetupService = async (data) => {
     // Crea el usuario con la contraseña ya establecida
     const usuario = await createUser(data, hashedPassword, rolUsuario.id);
 
-    // Asociar centro(s) si se envía centro_id
-    if (centro_id) {
-        const { asociarCentrosAUsuarioService } = await import('./centroUsuario.service.js');
-        await asociarCentrosAUsuarioService(usuario.id, centro_id);
-    }
-
     // Envía el correo con la contraseña generada
     await sendPasswordCredentialsEmail(usuario, defaultPassword);
 
@@ -302,12 +297,13 @@ export const createUserWithEmailSetupService = async (data) => {
         message: 'Usuario creado correctamente. Se ha enviado un correo electrónico con las credenciales de acceso.',
         usuario: {
             id: usuario.id,
+            tipo_documento: tipo_documento_nombre,
             documento: usuario.documento,
             nombres: usuario.nombres,
-            apellidos: usuario.apellidos,
+            apellidos: usuario.apellido,
             correo: usuario.correo,
             telefono: usuario.telefono,
-            nombre_usuario: usuario.nombre_usuario,
+            direccion: usuario.direccion,
             rol: rolUsuario.nombre,
             estado: usuario.estado
         }

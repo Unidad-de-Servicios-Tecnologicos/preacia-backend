@@ -20,7 +20,7 @@ const Usuario = sequelize.define(
                 key: 'id',
             },
         },
-        numero_documento: {
+        documento: {
             type: DataTypes.STRING(20),
             allowNull: false,
             unique: true,

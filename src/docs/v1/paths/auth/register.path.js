@@ -35,11 +35,6 @@ export const registerPaths = {
                                     description: 'Apellidos del usuario',
                                     example: 'Pérez'
                                 },
-                                nombre_usuario: {
-                                    type: 'string',
-                                    description: 'Nombre de usuario único',
-                                    example: 'juanperez'
-                                },
                                 correo: {
                                     type: 'string',
                                     format: 'email',
@@ -62,12 +57,11 @@ export const registerPaths = {
                                     example: 'contrasenaSegura123'
                                 }
                             },
-                            required: ['documento', 'nombres', 'apellidos', 'nombre_usuario', 'correo', 'contrasena', 'confirmar_contrasena'],
+                            required: ['documento', 'nombres', 'apellidos',  'correo', 'contrasena', 'confirmar_contrasena'],
                             example: {
                                 documento: '1234567890',
                                 nombres: 'Juan',
                                 apellidos: 'Pérez',
-                                nombre_usuario: 'juanperez',
                                 correo: 'juanperez@email.com',
                                 telefono: '3001234567',
                                 contrasena: 'contrasenaSegura123',
@@ -108,10 +102,6 @@ export const registerPaths = {
                                         apellidos: {
                                             type: 'string',
                                             example: 'Pérez'
-                                        },
-                                        nombre_usuario: {
-                                            type: 'string',
-                                            example: 'juanperez'
                                         },
                                         correo: {
                                             type: 'string',

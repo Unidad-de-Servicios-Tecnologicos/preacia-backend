@@ -76,7 +76,7 @@ export const sendPasswordCredentialsEmail = async (usuario, password) => {
     const html = baseEmailTemplate({
         title: "Credenciales de acceso",
         content: `
-            <p>Hola ${usuario.nombres},</p>
+            <p>Hola ${usuario.nombre},</p>
             <p>Tu cuenta ha sido creada exitosamente. A continuación, encontrarás tus credenciales de acceso al sistema:</p>
             
             <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; padding: 16px; margin: 16px 0;">

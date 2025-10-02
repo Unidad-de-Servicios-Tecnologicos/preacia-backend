@@ -19,9 +19,9 @@ INSERT INTO permisos (nombre, descripcion, estado) VALUES ('Editar Usuario', 'Pe
 INSERT INTO permisos (nombre, descripcion, estado) VALUES ('Eliminar Usuario', 'Permiso para eliminar usuarios', TRUE);
 
 -- datos para usuarios
-INSERT INTO usuarios (nombre, tipo_documento_id, numero_documento, correo, contrasena, estado) VALUES ('Administrador', '1', '1000233255', 'admin@gmail.com', '123456', TRUE);
-INSERT INTO usuarios (nombre, tipo_documento_id, numero_documento, correo, contrasena, estado) VALUES ('Empleado', '2', '43655255', 'empleado@gmail.com', '123456', TRUE);
-INSERT INTO usuarios (nombre, tipo_documento_id, numero_documento, correo, contrasena, estado) VALUES ('Usuario', '3','1023333444', 'usuario@gmail.com', '123456', TRUE);
+INSERT INTO usuarios (rol_id, tipo_documento_id, documento, nombres, apellidos, correo, telefono, direccion, contrasena, estado) VALUES (1, 1, '1000233255', 'esneider', 'moreno', 'esnedier@emai.com', '31144633456', 'cl 34 # 45 -44', '123456', TRUE);
+INSERT INTO usuarios (rol_id, tipo_documento_id, documento, nombres, apellidos, correo, telefono, direccion, contrasena, estado) VALUES (2, 1, '1435345345', 'julian', 'londoño', 'julian@gemai.com', '31144633456', 'cl 34 # 45 -44', '123456', TRUE);
+INSERT INTO usuarios (rol_id, tipo_documento_id, documento, nombres, apellidos, correo, telefono, direccion, contrasena, estado) VALUES (3, 1, '1345345342', 'gilbran', 'molina', 'gilbran@emai.com', '31144633456', 'cl 34 # 45 -44', '123456', TRUE);
 
 -- datos para rol_permiso
 INSERT INTO rol_permiso (rol_id, permiso_id) VALUES (1, 1);

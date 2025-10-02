@@ -45,10 +45,10 @@ CREATE TABLE IF NOT EXISTS permisos (
 -- create table usuarios
 CREATE TABLE IF NOT EXISTS usuarios (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    rol_id INT,
-    tipo_documento_id INT,
-    numero_documento INT,
-    nombre VARCHAR(100) NOT NULL,
+    rol_id INT NOT NULL,
+    tipo_documento_id INT NOT NULL,
+    documento INT,
+    nombres VARCHAR(100) NOT NULL,
     apellidos VARCHAR(100),
     correo VARCHAR(50) NOT NULL UNIQUE,
     telefono VARCHAR(15), 
@@ -62,8 +62,8 @@ CREATE TABLE IF NOT EXISTS usuarios (
     reset_token_expires TIMESTAMP NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (rol_id) REFERENCES roles(id) ON DELETE SET NULL,
-    FOREIGN KEY (tipo_documento_id) REFERENCES tipo_documentos(id) ON DELETE SET NULL
+    FOREIGN KEY (rol_id) REFERENCES roles(id),
+    FOREIGN KEY (tipo_documento_id) REFERENCES tipo_documentos(id)
 );
 
 CREATE TABLE IF NOT EXISTS rol_permiso (

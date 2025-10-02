@@ -5,9 +5,9 @@ import forgotPassword from "../../controllers/v1/auth/forgotPassword.controller.
 import resetPassword from "../../controllers/v1/auth/resetPassword.controller.js";
 import refreshToken from "../../controllers/v1/auth/refreshToken.controller.js";
 import changePassword from "../../controllers/v1/auth/changePassword.controller.js";
-import { verificarToken } from "../../middlewares/auth.middleware.js"; // me falta esta
-import { changePasswordValidator } from "../../middlewares/validators/changePassword.validator.js"; //esta tambien
-import { validateRequest } from "../../middlewares/validateRequest.middleware.js"; //esta tambien
+import { verificarToken } from "../../middlewares/auth.middleware.js"; 
+import { changePasswordValidator } from "../../middlewares/validators/changePassword.validator.js"; 
+import { validateRequest } from "../../middlewares/validateRequest.middleware.js"; 
 
 const router = express.Router();
 
