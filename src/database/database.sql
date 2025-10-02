@@ -1,95 +1,95 @@
-CREATE DATABASE IF NOT EXISTS preacia;
+  CREATE DATABASE IF NOT EXISTS preacia;
 
-USE preacia;
+  USE preacia;
 
-CREATE TABLE centros (
+  CREATE TABLE centros (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      codigo VARCHAR(10) NOT NULL UNIQUE,
+      nombre VARCHAR(300) NOT NULL,
+      direccion VARCHAR(255),
+      estado BOOLEAN DEFAULT TRUE,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  );
+
+
+  -- create table tipo_documentos
+  CREATE TABLE IF NOT EXISTS tipo_documentos (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      nombre VARCHAR(45) UNIQUE NOT NULL,
+      estado BOOLEAN NOT NULL DEFAULT TRUE,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  );
+
+  -- create table roles
+  CREATE TABLE IF NOT EXISTS roles (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    codigo VARCHAR(10) NOT NULL UNIQUE,
-    nombre VARCHAR(300) NOT NULL,
-    direccion VARCHAR(255),
-    estado BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
-
-
--- create table tipo_documentos
-CREATE TABLE IF NOT EXISTS tipo_documentos (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(45) UNIQUE NOT NULL,
-    estado BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
-
--- create table roles
-CREATE TABLE IF NOT EXISTS roles (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  nombre VARCHAR(50) NOT NULL UNIQUE,
-  descripcion VARCHAR(500),
-  estado BOOLEAN DEFAULT TRUE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
-
--- create table permisos
-CREATE TABLE IF NOT EXISTS permisos (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL UNIQUE,
+    nombre VARCHAR(50) NOT NULL UNIQUE,
     descripcion VARCHAR(500),
     estado BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
+  );
 
--- create table usuarios
-CREATE TABLE IF NOT EXISTS usuarios (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+  -- create table permisos
+  CREATE TABLE IF NOT EXISTS permisos (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      nombre VARCHAR(100) NOT NULL UNIQUE,
+      descripcion VARCHAR(500),
+      estado BOOLEAN DEFAULT TRUE,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  );
+
+  -- create table usuarios
+  CREATE TABLE IF NOT EXISTS usuarios (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      rol_id INT NOT NULL,
+      tipo_documento_id INT NOT NULL,
+      documento INT,
+      nombres VARCHAR(100) NOT NULL,
+      apellidos VARCHAR(100),
+      correo VARCHAR(50) NOT NULL UNIQUE,
+      telefono VARCHAR(15), 
+      direccion VARCHAR(100),
+      contrasena VARCHAR(255) NOT NULL,
+      estado BOOLEAN NOT NULL DEFAULT TRUE,
+      ultimo_acceso TIMESTAMP NULL,
+      acia_id INT,
+      verificado_acia BOOLEAN NOT NULL DEFAULT FALSE,
+      reset_token VARCHAR(255),
+      reset_token_expires TIMESTAMP NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      FOREIGN KEY (rol_id) REFERENCES roles(id),
+      FOREIGN KEY (tipo_documento_id) REFERENCES tipo_documentos(id)
+  );
+
+  CREATE TABLE IF NOT EXISTS rol_permiso (
     rol_id INT NOT NULL,
-    tipo_documento_id INT NOT NULL,
-    documento INT,
-    nombres VARCHAR(100) NOT NULL,
-    apellidos VARCHAR(100),
-    correo VARCHAR(50) NOT NULL UNIQUE,
-    telefono VARCHAR(15), 
-    direccion VARCHAR(100),
-    contrasena VARCHAR(255) NOT NULL,
-    estado BOOLEAN NOT NULL DEFAULT TRUE,
-    ultimo_acceso TIMESTAMP NULL,
-    acia_id INT,
-    verificado_acia BOOLEAN NOT NULL DEFAULT FALSE,
-    reset_token VARCHAR(255),
-    reset_token_expires TIMESTAMP NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (rol_id) REFERENCES roles(id),
-    FOREIGN KEY (tipo_documento_id) REFERENCES tipo_documentos(id)
-);
+    permiso_id INT NOT NULL,
+    PRIMARY KEY (rol_id, permiso_id),
+    FOREIGN KEY (rol_id) REFERENCES roles(id) ON DELETE CASCADE,
+    FOREIGN KEY (permiso_id) REFERENCES permisos(id) ON DELETE CASCADE
+  );
 
-CREATE TABLE IF NOT EXISTS rol_permiso (
-  rol_id INT NOT NULL,
-  permiso_id INT NOT NULL,
-  PRIMARY KEY (rol_id, permiso_id),
-  FOREIGN KEY (rol_id) REFERENCES roles(id) ON DELETE CASCADE,
-  FOREIGN KEY (permiso_id) REFERENCES permisos(id) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS usuario_permiso (
-  usuario_id INT NOT NULL,
-  permiso_id INT NOT NULL,
-  PRIMARY KEY (usuario_id, permiso_id),
-  FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
-  FOREIGN KEY (permiso_id) REFERENCES permisos(id) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS centro_usuario (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    centro_id INT NOT NULL,
+  CREATE TABLE IF NOT EXISTS usuario_permiso (
     usuario_id INT NOT NULL,
-    FOREIGN KEY (centro_id) REFERENCES centros(id)
-        ON DELETE RESTRICT,   
-    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
-        ON DELETE RESTRICT
-);
+    permiso_id INT NOT NULL,
+    PRIMARY KEY (usuario_id, permiso_id),
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+    FOREIGN KEY (permiso_id) REFERENCES permisos(id) ON DELETE CASCADE
+  );
+
+  CREATE TABLE IF NOT EXISTS centro_usuario (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      centro_id INT NOT NULL,
+      usuario_id INT NOT NULL,
+      FOREIGN KEY (centro_id) REFERENCES centros(id)
+          ON DELETE RESTRICT,   
+      FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+          ON DELETE RESTRICT
+  );
 
 

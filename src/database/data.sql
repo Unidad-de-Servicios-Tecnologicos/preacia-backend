@@ -12,8 +12,6 @@ INSERT INTO tipo_documentos (nombre, estado) VALUES ('Carnet de Extranjería', T
 INSERT INTO roles (nombre, descripcion, estado) VALUES ('Administrador', 'Administrador del sistema', TRUE);
 INSERT INTO roles (nombre, descripcion, estado) VALUES ('Empleado', 'Empleado del sistema', TRUE);
 INSERT INTO roles (nombre, descripcion, estado) VALUES ('Usuario', 'Usuario del sistema', TRUE);
-INSERT INTO roles (nombre, descripcion, estado) VALUES ('Usuario', 'Usuario del sistema', TRUE);
-INSERT INTO roles (nombre, descripcion, estado) VALUES ('Usuario', 'Usuario del sistema', TRUE);
 
 -- datos para permisos
 INSERT INTO permisos (nombre, descripcion, estado) VALUES ('gestionar_usuarios', 'Permiso para crear usuarios', TRUE);
