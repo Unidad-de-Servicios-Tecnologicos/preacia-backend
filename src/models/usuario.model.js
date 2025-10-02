@@ -12,9 +12,17 @@ const Usuario = sequelize.define(
             autoIncrement: true,
             allowNull: false,
         },
+        rol_id: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            references: {
+                model: 'roles',
+                key: 'id',
+            },
+        },
         tipo_documento_id: {
             type: DataTypes.INTEGER,
-            allowNull: true,
+            allowNull: false,
             references: {
                 model: 'tipo_documentos',
                 key: 'id',
@@ -30,7 +38,7 @@ const Usuario = sequelize.define(
             allowNull: false,
             set(value) {
                 this.setDataValue(
-                    'apellidos',
+                    'nombres',
                     value
                         .toLowerCase()
                         .replace(/\b\w/g, l => l.toUpperCase())

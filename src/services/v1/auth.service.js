@@ -8,6 +8,7 @@ import {
 import { findUserByEmail } from '../../repositories/usuario.repository.js';
 import { encriptPassword } from '../../utils/global.util.js';
 import { getRoleByNameRepository } from '../../repositories/rol.repository.js';
+import { findTipoDocumentoByNombreRepository } from '../../repositories/tipoDocumento.repository.js';
 import { RolEnum } from '../../enums/rol.enum.js';
 import jwt from "jsonwebtoken";
 import Usuario from '../../models/usuario.model.js';
@@ -18,7 +19,7 @@ import { findUsuarioById } from "../../repositories/usuario.repository.js";
 import { generateAccessToken } from '../../utils/global.util.js';
 
 export const registerUserService = async (data) => {
-    const { contrasena, rol_nombre } = data;
+    const { contrasena, rol_nombre, tipo_documento } = data;
 
     let rolUsuario;
 
@@ -40,11 +41,33 @@ export const registerUserService = async (data) => {
         }
     }
 
+    // Buscar el tipo de documento por nombre y obtener su ID
+    let tipoDocumentoId = null;
+    if (tipo_documento && tipo_documento.trim() !== '') {
+        const tipoDocumento = await findTipoDocumentoByNombreRepository(tipo_documento.trim());
+        if (!tipoDocumento) {
+            const error = new Error(`No se encontró el tipo de documento "${tipo_documento}".`);
+            error.status = 400;
+            throw error;
+        }
+        tipoDocumentoId = tipoDocumento.id;
+    } else {
+        const error = new Error('El tipo de documento es requerido.');
+        error.status = 400;
+        throw error;
+    }
+
     // Encripta la contraseña y genera el código
     const hashedPassword = await encriptPassword(contrasena, 10);
 
+    // Preparar los datos del usuario con el tipo_documento_id
+    const userData = {
+        ...data,
+        tipo_documento_id: tipoDocumentoId
+    };
+
     // Crea el usuario
-    const usuario = await createUser(data, hashedPassword, rolUsuario.id);
+    const usuario = await createUser(userData, hashedPassword, rolUsuario.id);
 
     return {
         message: 'Usuario registrado correctamente. Debe esperar la verificación de su cuenta por parte de un administrador del sistema.',
@@ -52,7 +75,7 @@ export const registerUserService = async (data) => {
             id: usuario.id,
             documento: usuario.documento,
             nombres: usuario.nombres,
-            apellidos: usuario.apellido,
+            apellidos: usuario.apellidos,
             correo: usuario.correo,
             telefono: usuario.telefono,
             direccion: usuario.direccion,
@@ -130,7 +153,7 @@ export const loginUserService = async ({ login, contrasena }) => {
             id: user.id,
             documento: user.documento,
             nombres: user.nombres,
-            apellidos: user.apellido,
+            apellidos: user.apellidos,
             correo: user.correo,
             telefono: user.telefono,
             direccion: user.direccion,
@@ -258,7 +281,7 @@ export const refreshTokenService = async (refreshToken) => {
 };
 
 export const createUserWithEmailSetupService = async (data) => {
-    const { rol_nombre, correo, documento } = data;
+    const { rol_nombre, correo, documento, tipo_documento } = data;
 
     let rolUsuario;
 
@@ -280,6 +303,22 @@ export const createUserWithEmailSetupService = async (data) => {
         }
     }
 
+    // Buscar el tipo de documento por nombre y obtener su ID
+    let tipoDocumentoId = null;
+    if (tipo_documento && tipo_documento.trim() !== '') {
+        const tipoDocumento = await findTipoDocumentoByNombreRepository(tipo_documento.trim());
+        if (!tipoDocumento) {
+            const error = new Error(`No se encontró el tipo de documento "${tipo_documento}".`);
+            error.status = 400;
+            throw error;
+        }
+        tipoDocumentoId = tipoDocumento.id;
+    } else {
+        const error = new Error('El tipo de documento es requerido.');
+        error.status = 400;
+        throw error;
+    }
+
     // Genera una contraseña basada en correo + documento + carácter especial
     const emailPrefix = correo.split('@')[0].substring(0, 4); // Primeros 4 caracteres del correo
     const docSuffix = documento.toString().slice(-4); // Últimos 4 dígitos del documento
@@ -287,8 +326,14 @@ export const createUserWithEmailSetupService = async (data) => {
 
     const hashedPassword = await encriptPassword(defaultPassword, 10);
 
+    // Preparar los datos del usuario con el tipo_documento_id
+    const userData = {
+        ...data,
+        tipo_documento_id: tipoDocumentoId
+    };
+
     // Crea el usuario con la contraseña ya establecida
-    const usuario = await createUser(data, hashedPassword, rolUsuario.id);
+    const usuario = await createUser(userData, hashedPassword, rolUsuario.id);
 
     // Envía el correo con la contraseña generada
     await sendPasswordCredentialsEmail(usuario, defaultPassword);
@@ -297,10 +342,10 @@ export const createUserWithEmailSetupService = async (data) => {
         message: 'Usuario creado correctamente. Se ha enviado un correo electrónico con las credenciales de acceso.',
         usuario: {
             id: usuario.id,
-            tipo_documento: tipo_documento_nombre,
+            tipo_documento: tipo_documento,
             documento: usuario.documento,
             nombres: usuario.nombres,
-            apellidos: usuario.apellido,
+            apellidos: usuario.apellidos,
             correo: usuario.correo,
             telefono: usuario.telefono,
             direccion: usuario.direccion,

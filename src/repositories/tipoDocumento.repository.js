@@ -151,9 +151,8 @@ export const findTipoDocumentoByIdRepository = async (id) => {
 export const findTipoDocumentoByNombreRepository = async (nombre) => {
   return await TipoDocumento.findOne({
     where: {
-      nombre: {
-        [Op.like]: nombre
-      }
+      nombre: nombre,
+      estado: true
     },
     attributes: ['id', 'nombre']
   });

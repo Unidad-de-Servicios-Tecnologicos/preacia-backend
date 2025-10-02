@@ -8,7 +8,7 @@ import { Op } from 'sequelize';
  */
 export const createUser = async (data, hashedPassword, roleId, estado = false) => {
     const {
-        tipo_docuemento_id, 
+        tipo_documento_id, 
         documento,
         nombres,
         apellidos,
@@ -19,7 +19,7 @@ export const createUser = async (data, hashedPassword, roleId, estado = false) =
 
     return await Usuario.create({
         rol_id: roleId,
-        tipo_docuemento_id,
+        tipo_documento_id,
         documento,
         nombres,
         apellidos,
