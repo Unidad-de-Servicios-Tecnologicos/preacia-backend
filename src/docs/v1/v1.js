@@ -4,12 +4,13 @@ import { forgotPasswordPaths } from './paths/auth/forgotPassword.path.js';
 import { resetPasswordPaths } from './paths/auth/resetPassword.path.js';
 import { refreshTokenPaths } from './paths/auth/refreshToken.path.js';
 import { tipoDocumentoPaths } from './paths/tipoDocumento/tipoDocumento.path.js';
-import { rolesPaths } from './paths/rol/rol.path.js';
+import { permisosPaths } from './paths/permiso/permiso.path.js';
+
 
 
 // Importar esquemas
 import { tipoDocumentoSchemas } from './shemas/tipoDocumento/tipoDocumento.schema.js';
-import { rolesSchemas } from './schemas/rol.schema.js';
+import { permisosSchemas } from './shemas/permiso.shemas.js';
 
 
 export default {
@@ -32,12 +33,12 @@ export default {
         ...resetPasswordPaths,
         ...refreshTokenPaths,
         ...tipoDocumentoPaths,
-        ...rolesPaths,
+        ...permisosPaths
     },
     components: {
         schemas: {
             ...tipoDocumentoSchemas,
-            ...rolesSchemas,
+            ...permisosSchemas
         }
     }
 };
