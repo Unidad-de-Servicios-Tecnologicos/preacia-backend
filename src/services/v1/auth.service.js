@@ -8,6 +8,7 @@ import {
 import { findUserByEmail } from '../../repositories/usuario.repository.js';
 import { encriptPassword } from '../../utils/global.util.js';
 import { getRoleByNameRepository } from '../../repositories/rol.repository.js';
+import { findTipoDocumentoByNombreRepository } from '../../repositories/tipoDocumento.repository.js';
 import { RolEnum } from '../../enums/rol.enum.js';
 import jwt from "jsonwebtoken";
 import Usuario from '../../models/usuario.model.js';
@@ -18,7 +19,7 @@ import { findUsuarioById } from "../../repositories/usuario.repository.js";
 import { generateAccessToken } from '../../utils/global.util.js';
 
 export const registerUserService = async (data) => {
-    const { contrasena, rol_nombre } = data;
+    const { contrasena, rol_nombre, tipo_documento } = data;
 
     let rolUsuario;
 
@@ -40,11 +41,33 @@ export const registerUserService = async (data) => {
         }
     }
 
+    // Buscar el tipo de documento por nombre y obtener su ID
+    let tipoDocumentoId = null;
+    if (tipo_documento && tipo_documento.trim() !== '') {
+        const tipoDocumento = await findTipoDocumentoByNombreRepository(tipo_documento.trim());
+        if (!tipoDocumento) {
+            const error = new Error(`No se encontró el tipo de documento "${tipo_documento}".`);
+            error.status = 400;
+            throw error;
+        }
+        tipoDocumentoId = tipoDocumento.id;
+    } else {
+        const error = new Error('El tipo de documento es requerido.');
+        error.status = 400;
+        throw error;
+    }
+
     // Encripta la contraseña y genera el código
     const hashedPassword = await encriptPassword(contrasena, 10);
 
+    // Preparar los datos del usuario con el tipo_documento_id
+    const userData = {
+        ...data,
+        tipo_documento_id: tipoDocumentoId
+    };
+
     // Crea el usuario
-    const usuario = await createUser(data, hashedPassword, rolUsuario.id);
+    const usuario = await createUser(userData, hashedPassword, rolUsuario.id);
 
     return {
         message: 'Usuario registrado correctamente. Debe esperar la verificación de su cuenta por parte de un administrador del sistema.',
@@ -53,9 +76,9 @@ export const registerUserService = async (data) => {
             documento: usuario.documento,
             nombres: usuario.nombres,
             apellidos: usuario.apellidos,
-            nombre_usuario: usuario.nombre_usuario,
             correo: usuario.correo,
             telefono: usuario.telefono,
+            direccion: usuario.direccion,
             estado: usuario.estado,
             rol: {
                 id: usuario.rol_id,
@@ -72,7 +95,7 @@ export const loginUserService = async ({ login, contrasena }) => {
     const user = await findUserForLogin(login);
 
     if (!user) {
-        return { success: false, message: 'Usuario, documento o correo no encontrado.', status: 404 };
+        return { success: false, message: 'Usuario, numero de documento o correo no encontrado.', status: 404 };
     }
 
     if (!user.estado) {
@@ -85,6 +108,7 @@ export const loginUserService = async ({ login, contrasena }) => {
     }
 
     const rol_nombre = user.rol ? user.rol.nombre : null;
+    const tipo_documento_nombre = user.tipo_documento ? user.tipo_documento.nombre : null;
 
     // Combinar permisos del usuario y del rol
     const permisosUsuario = user.permisos || [];
@@ -130,9 +154,9 @@ export const loginUserService = async ({ login, contrasena }) => {
             documento: user.documento,
             nombres: user.nombres,
             apellidos: user.apellidos,
-            nombre_usuario: user.nombre_usuario,
             correo: user.correo,
             telefono: user.telefono,
+            direccion: user.direccion,
             estado: user.estado,
             rol: {
                 id: user.rol_id,
@@ -148,7 +172,7 @@ export const loginUserService = async ({ login, contrasena }) => {
 
 export const forgotPasswordService = async ({ correo }) => {
     try {
-        const usuario = await findUserByEmail(correo);
+        const usuario = await findUserByEmail(correo, ['id', 'correo', 'nombre', 'estado', 'rol_id']);
 
         if (!usuario) {
             return { success: false, message: 'Correo inválido.', status: 404 };
@@ -162,7 +186,7 @@ export const forgotPasswordService = async ({ correo }) => {
             id: usuario.id,
             correo: usuario.correo,
             rol_id: usuario.rol_id,
-            rol_nombre: usuario.rol_nombre,
+            rol_nombre: usuario.rol ? usuario.rol.nombre : null,
             estado: usuario.estado
         });
 
@@ -243,7 +267,7 @@ export const refreshTokenService = async (refreshToken) => {
             id: usuario.id,
             correo: usuario.correo,
             rol_id: usuario.rol_id,
-            rol_nombre: usuario.rol_nombre,
+            rol_nombre: usuario.rol ? usuario.rol.nombre : null,
             estado: usuario.estado
         });
 
@@ -257,7 +281,7 @@ export const refreshTokenService = async (refreshToken) => {
 };
 
 export const createUserWithEmailSetupService = async (data) => {
-    const { rol_nombre, correo, documento, centro_id } = data;
+    const { rol_nombre, correo, documento, tipo_documento } = data;
 
     let rolUsuario;
 
@@ -279,6 +303,22 @@ export const createUserWithEmailSetupService = async (data) => {
         }
     }
 
+    // Buscar el tipo de documento por nombre y obtener su ID
+    let tipoDocumentoId = null;
+    if (tipo_documento && tipo_documento.trim() !== '') {
+        const tipoDocumento = await findTipoDocumentoByNombreRepository(tipo_documento.trim());
+        if (!tipoDocumento) {
+            const error = new Error(`No se encontró el tipo de documento "${tipo_documento}".`);
+            error.status = 400;
+            throw error;
+        }
+        tipoDocumentoId = tipoDocumento.id;
+    } else {
+        const error = new Error('El tipo de documento es requerido.');
+        error.status = 400;
+        throw error;
+    }
+
     // Genera una contraseña basada en correo + documento + carácter especial
     const emailPrefix = correo.split('@')[0].substring(0, 4); // Primeros 4 caracteres del correo
     const docSuffix = documento.toString().slice(-4); // Últimos 4 dígitos del documento
@@ -286,14 +326,14 @@ export const createUserWithEmailSetupService = async (data) => {
 
     const hashedPassword = await encriptPassword(defaultPassword, 10);
 
-    // Crea el usuario con la contraseña ya establecida
-    const usuario = await createUser(data, hashedPassword, rolUsuario.id);
+    // Preparar los datos del usuario con el tipo_documento_id
+    const userData = {
+        ...data,
+        tipo_documento_id: tipoDocumentoId
+    };
 
-    // Asociar centro(s) si se envía centro_id
-    if (centro_id) {
-        const { asociarCentrosAUsuarioService } = await import('./centroUsuario.service.js');
-        await asociarCentrosAUsuarioService(usuario.id, centro_id);
-    }
+    // Crea el usuario con la contraseña ya establecida
+    const usuario = await createUser(userData, hashedPassword, rolUsuario.id);
 
     // Envía el correo con la contraseña generada
     await sendPasswordCredentialsEmail(usuario, defaultPassword);
@@ -302,12 +342,13 @@ export const createUserWithEmailSetupService = async (data) => {
         message: 'Usuario creado correctamente. Se ha enviado un correo electrónico con las credenciales de acceso.',
         usuario: {
             id: usuario.id,
+            tipo_documento: tipo_documento,
             documento: usuario.documento,
             nombres: usuario.nombres,
             apellidos: usuario.apellidos,
             correo: usuario.correo,
             telefono: usuario.telefono,
-            nombre_usuario: usuario.nombre_usuario,
+            direccion: usuario.direccion,
             rol: rolUsuario.nombre,
             estado: usuario.estado
         }

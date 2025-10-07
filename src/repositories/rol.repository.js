@@ -1,7 +1,7 @@
 import { Op } from "sequelize";
 import Rol from "../models/rol.model.js";
 import Usuario from "../models/usuario.model.js";
-import RolPermiso from "../models/rol_permiso.model.js";
+import RolPermiso from "../models/rolPermiso.model.js";
 import Permiso from "../models/permiso.model.js";
 
 /**

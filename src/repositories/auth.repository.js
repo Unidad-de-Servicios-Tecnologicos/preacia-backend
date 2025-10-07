@@ -8,24 +8,26 @@ import { Op } from 'sequelize';
  */
 export const createUser = async (data, hashedPassword, roleId, estado = false) => {
     const {
+        tipo_documento_id, 
         documento,
         nombres,
         apellidos,
-        nombre_usuario,
         correo,
-        telefono
+        telefono,
+        direccion
     } = data;
 
     return await Usuario.create({
+        rol_id: roleId,
+        tipo_documento_id,
         documento,
         nombres,
         apellidos,
-        nombre_usuario,
         correo,
         telefono,
+        direccion,
         contrasena: hashedPassword,
-        estado,
-        rol_id: roleId
+        estado
     });
 };
 
@@ -55,7 +57,6 @@ export const findUserForLogin = async (login) => {
     return await Usuario.findOne({
         where: {
             [Op.or]: [
-                { nombre_usuario: login },
                 { documento: login },
                 { correo: login }
             ]

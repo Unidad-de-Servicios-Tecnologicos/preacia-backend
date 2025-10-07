@@ -66,9 +66,6 @@ export const loginPaths = {
                                             apellidos: {
                                                 type: 'string', example: 'Pérez'
                                             },
-                                            nombre_usuario: {
-                                                type: 'string', example: 'juanperez'
-                                            },
                                             correo: {
                                                 type: 'string',
                                                 example: 'juanperez@email.com'

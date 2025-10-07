@@ -18,6 +18,16 @@ Rol.hasMany(Usuario, {
   as: 'usuarios',
 });
 
+// Asociación con TipoDocumento
+Usuario.belongsTo(TipoDocumento, {
+  foreignKey: 'tipo_documento_id',
+  as: 'tipo_documento',
+});
+
+TipoDocumento.hasMany(Usuario, {
+  foreignKey: 'tipo_documento_id',
+  as: 'usuarios',
+});
 
 Usuario.belongsToMany(Permiso, {
   through: UsuarioPermiso,
