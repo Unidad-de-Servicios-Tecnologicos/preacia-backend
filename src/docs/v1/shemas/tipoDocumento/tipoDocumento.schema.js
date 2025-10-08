@@ -7,34 +7,38 @@ export const tipoDocumentoSchemas = {
                 description: 'Identificador único del tipo de documento',
                 example: 1
             },
+            codigo: {
+                type: 'string',
+                maxLength: 10,
+                description: 'Código único del tipo de documento (CC, CE, NIT, etc.)',
+                example: 'CC'
+            },
             nombre: {
                 type: 'string',
-                maxLength: 45,
+                maxLength: 100,
                 description: 'Nombre completo del tipo de documento',
-                example: 'Tipo de Documento 1'
+                example: 'Cédula de Ciudadanía'
             },
-            estado: {
-                type: 'string',
-                maxLength: 45,
-                description: 'Estado del tipo de documento',
-                example: 'activo',
-                enum: ['activo', 'inactivo'],
-                default: 'activo'
+            activo: {
+                type: 'boolean',
+                description: 'Estado activo/inactivo del tipo de documento',
+                example: true,
+                default: true
             },
-            fecha_creacion: {
+            created_at: {
                 type: 'string',
                 format: 'date-time',
                 description: 'Fecha de creación del registro',
                 example: '2024-01-15T10:30:00.000Z'
             },
-            fecha_actualizacion: {
+            updated_at: {
                 type: 'string',
                 format: 'date-time',
                 description: 'Fecha de última actualización del registro',
                 example: '2024-01-15T10:30:00.000Z'
             }
         },
-        required: ['nombre', 'estado']
+        required: ['codigo', 'nombre']
     },
 
 

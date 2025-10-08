@@ -1,8 +1,8 @@
 import { DataTypes } from 'sequelize';
 import sequelize from '../config/db.config.js';
 
-const TipoDocumento = sequelize.define(
-  'TipoDocumento',
+const Regional = sequelize.define(
+  'Regional',
   {
     id: {
       type: DataTypes.INTEGER,
@@ -11,16 +11,25 @@ const TipoDocumento = sequelize.define(
       allowNull: false,
     },
     codigo: {
-      type: DataTypes.STRING(10),
+      type: DataTypes.STRING(20),
       allowNull: false,
       unique: true,
-      comment: 'Código único del tipo de documento (CC, CE, NIT, etc.)',
+      comment: 'Código único de la regional',
     },
     nombre: {
-      type: DataTypes.STRING(100),
+      type: DataTypes.STRING(200),
       allowNull: false,
-      unique: true,
-      comment: 'Nombre del tipo de documento',
+      comment: 'Nombre de la regional',
+    },
+    direccion: {
+      type: DataTypes.STRING(300),
+      allowNull: true,
+      comment: 'Dirección de la regional',
+    },
+    telefono: {
+      type: DataTypes.STRING(20),
+      allowNull: true,
+      comment: 'Teléfono de contacto',
     },
     activo: {
       type: DataTypes.BOOLEAN,
@@ -39,7 +48,7 @@ const TipoDocumento = sequelize.define(
     },
   },
   {
-    tableName: 'tipo_documentos',
+    tableName: 'regionales',
     timestamps: false,
     charset: 'utf8mb4',
     collate: 'utf8mb4_unicode_ci',
@@ -48,9 +57,13 @@ const TipoDocumento = sequelize.define(
         name: 'idx_activo',
         fields: ['activo'],
       },
+      {
+        name: 'idx_codigo',
+        fields: ['codigo'],
+      },
     ],
   }
 );
 
+export default Regional;
 
-export default TipoDocumento;

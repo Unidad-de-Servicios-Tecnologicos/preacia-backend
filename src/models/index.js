@@ -4,6 +4,8 @@ import Permiso from './permiso.model.js';
 import UsuarioPermiso from './usuarioPermiso.model.js';
 import RolPermiso from './rolPermiso.model.js';
 import TipoDocumento from './tipoDocumento.model.js';
+import Regional from './regional.model.js';
+import Centro from './centro.model.js';
 
 
 
@@ -58,6 +60,17 @@ Permiso.belongsToMany(Usuario, {
   as: 'usuarios',
 });
 
+// Relación Regional - Centro
+Regional.hasMany(Centro, {
+  foreignKey: 'regional_id',
+  as: 'centros',
+});
+
+Centro.belongsTo(Regional, {
+  foreignKey: 'regional_id',
+  as: 'regional',
+});
+
 
 // Exportar todos los modelos
 export {
@@ -66,5 +79,7 @@ export {
   Permiso,
   UsuarioPermiso,
   RolPermiso,
-  TipoDocumento
+  TipoDocumento,
+  Regional,
+  Centro
 };

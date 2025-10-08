@@ -14,7 +14,7 @@ router.get('/',
     verificarToken,
     verificarCuentaActiva,
     verificarRolOPermiso(
-      [RolEnum.ADMINISTRADOR, RolEnum.EMPLEADO, RolEnum.USUARIO],
+      [RolEnum.ADMIN, RolEnum.DIRECTOR_REGIONAL, RolEnum.ADMINISTRADOR_CENTRO, RolEnum.REVISOR],
       [PermisoEnum.GESTIONAR_TIPO_DOCUMENTOS]
     ),
   ],
@@ -26,41 +26,41 @@ router.get('/list',
     verificarToken,
     verificarCuentaActiva,
     verificarRolOPermiso(
-      [RolEnum.ADMINISTRADOR, RolEnum.EMPLEADO, RolEnum.USUARIO],
+      [RolEnum.ADMIN, RolEnum.DIRECTOR_REGIONAL, RolEnum.ADMINISTRADOR_CENTRO, RolEnum.REVISOR],
       [PermisoEnum.GESTIONAR_TIPO_DOCUMENTOS]
     ),
   ],
   tipoDocumentoController.getListTipoDocumentos
 );
 
-// Ruta para crear un nuevo tipo de documento
+// Ruta para crear un nuevo tipo de documento (solo Admin Nacional)
 router.post('/',
   [
     verificarToken,
     verificarCuentaActiva,
-    verificarRolOPermiso([RolEnum.ADMINISTRADOR], [PermisoEnum.GESTIONAR_TIPO_DOCUMENTOS])
+    verificarRolOPermiso([RolEnum.ADMIN], [PermisoEnum.GESTIONAR_TIPO_DOCUMENTOS])
   ],
   createTipoDocumentoValidator,
   tipoDocumentoController.storeTipoDocumento
 );
 
-// Ruta para editar un tipo de documento por ID
+// Ruta para editar un tipo de documento por ID (solo Admin Nacional)
 router.put('/:id',
   [
     verificarToken,
     verificarCuentaActiva,
-    verificarRolOPermiso([RolEnum.ADMINISTRADOR], [PermisoEnum.GESTIONAR_TIPO_DOCUMENTOS])
+    verificarRolOPermiso([RolEnum.ADMIN], [PermisoEnum.GESTIONAR_TIPO_DOCUMENTOS])
   ],
   [...idParamValidator, ...updateTipoDocumentoValidator],
   tipoDocumentoController.updateTipoDocumento
 );
 
-// Ruta para cambiar el estado de un tipo de documento por id
+// Ruta para cambiar el estado de un tipo de documento por id (solo Admin Nacional)
 router.patch('/:id/estado',
   [
     verificarToken,
     verificarCuentaActiva,
-    verificarRolOPermiso([RolEnum.ADMINISTRADOR], [PermisoEnum.GESTIONAR_TIPO_DOCUMENTOS])
+    verificarRolOPermiso([RolEnum.ADMIN], [PermisoEnum.GESTIONAR_TIPO_DOCUMENTOS])
   ],
   [...idParamValidator, ...cambiarEstadoValidator],
   tipoDocumentoController.changeTipoDocumentoStatus
@@ -71,7 +71,10 @@ router.get('/:id',
   [
     verificarToken,
     verificarCuentaActiva,
-    verificarRolOPermiso([RolEnum.ADMINISTRADOR], [PermisoEnum.GESTIONAR_TIPO_DOCUMENTOS])
+    verificarRolOPermiso(
+      [RolEnum.ADMIN, RolEnum.DIRECTOR_REGIONAL, RolEnum.ADMINISTRADOR_CENTRO, RolEnum.REVISOR],
+      [PermisoEnum.GESTIONAR_TIPO_DOCUMENTOS]
+    )
   ],
   idParamValidator,
   tipoDocumentoController.showTipoDocumento

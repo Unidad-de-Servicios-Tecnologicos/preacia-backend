@@ -1,15 +1,15 @@
 import { Op } from "sequelize";
-import TipoDocumento from "../models/tipoDocumento.model.js";
+import Regional from "../models/regional.model.js";
 
 /**
- * Repositorio para obtener tipos de documentos con filtros, orden y paginación.
+ * Repositorio para obtener regionales con filtros, orden y paginación.
  */
-export const getTipoDocumentosRepository = async ({
+export const getRegionalesRepository = async ({
   id,
   codigo,
   nombre,
   activo,
-  search, // Nuevo parámetro para búsqueda global      
+  search,
   sortBy = "id",
   order = "ASC",
   page = 1,
@@ -36,6 +36,7 @@ export const getTipoDocumentosRepository = async ({
     whereClause[Op.or] = [
       { codigo: { [Op.like]: `%${searchUpper}%` } },
       { nombre: { [Op.like]: `%${search}%` } },
+      { direccion: { [Op.like]: `%${search}%` } },
     ];
   } else {
     if (nombre) {
@@ -45,7 +46,7 @@ export const getTipoDocumentosRepository = async ({
 
   const offset = (page - 1) * limit;
 
-  const { count, rows } = await TipoDocumento.findAndCountAll({
+  const { count, rows } = await Regional.findAndCountAll({
     where: whereClause,
     order: [[sortBy, order]],
     limit: parseInt(limit),
@@ -59,18 +60,19 @@ export const getTipoDocumentosRepository = async ({
 };
 
 /**
- * Repositorio para la lista de tipos de documentos.
+ * Repositorio para la lista de regionales.
  */
-export const getListTipoDocumentosRepository = async (activo, sortBy = "id", order = "ASC") => {
+export const getListRegionalesRepository = async (activo, sortBy = "nombre", order = "ASC") => {
   const whereClause = {};
 
   if (activo !== undefined) {
     whereClause.activo = { [Op.eq]: activo };
   }
 
-  const { count, rows } = await TipoDocumento.findAndCountAll({
+  const { count, rows } = await Regional.findAndCountAll({
     where: whereClause,
     order: [[sortBy, order]],
+    attributes: ['id', 'codigo', 'nombre', 'activo'],
   });
 
   return {
@@ -80,19 +82,19 @@ export const getListTipoDocumentosRepository = async (activo, sortBy = "id", ord
 };
 
 /**
- * Buscar un tipo de documento por ID.
+ * Buscar una regional por ID.
  */
-export const showTipoDocumentoRepository = async (id) => {
-  return await TipoDocumento.findOne({
+export const showRegionalRepository = async (id) => {
+  return await Regional.findOne({
     where: { id },
   });
 };
 
 /**
- * Buscar un tipo de documento por código.
+ * Buscar una regional por código.
  */
-export const findTipoDocumentoByCodigoRepository = async (codigo) => {
-  return await TipoDocumento.findOne({
+export const findRegionalByCodigoRepository = async (codigo) => {
+  return await Regional.findOne({
     where: { 
       codigo: codigo.toUpperCase()
     },
@@ -101,10 +103,10 @@ export const findTipoDocumentoByCodigoRepository = async (codigo) => {
 };
 
 /**
- * Buscar un tipo de documento por código excluyendo un ID.
+ * Buscar una regional por código excluyendo un ID.
  */
-export const findTipoDocumentoByCodigoExcludingIdRepository = async (codigo, idExcluir) => {
-  return await TipoDocumento.findOne({
+export const findRegionalByCodigoExcludingIdRepository = async (codigo, idExcluir) => {
+  return await Regional.findOne({
     where: {
       codigo: codigo.toUpperCase(),
       id: {
@@ -116,21 +118,21 @@ export const findTipoDocumentoByCodigoExcludingIdRepository = async (codigo, idE
 };
 
 /**
- * Crear un nuevo tipo de documento.
+ * Crear una nueva regional.
  */
-export const storeTipoDocumentoRepository = async (data) => {
-  return await TipoDocumento.create({
+export const storeRegionalRepository = async (data) => {
+  return await Regional.create({
     ...data,
     codigo: data.codigo.toUpperCase()
   });
 };
 
 /**
- * Actualizar un tipo de documento por ID.
+ * Actualizar una regional por ID.
  */
-export const updateTipoDocumentoRepository = async (id, data) => {
-  const tipoDocumento = await TipoDocumento.findOne({ where: { id } });
-  if (!tipoDocumento) return null;
+export const updateRegionalRepository = async (id, data) => {
+  const regional = await Regional.findOne({ where: { id } });
+  if (!regional) return null;
 
   // Agregar timestamp de actualización y convertir código a mayúsculas si se proporciona
   const updateData = {
@@ -142,26 +144,26 @@ export const updateTipoDocumentoRepository = async (id, data) => {
     updateData.codigo = data.codigo.toUpperCase();
   }
 
-  await tipoDocumento.update(updateData);
-  await tipoDocumento.reload();
-  return tipoDocumento;
+  await regional.update(updateData);
+  await regional.reload();
+  return regional;
 };
 
 /**
- * Verificar si existe un tipo de documento con el mismo ID.
+ * Verificar si existe una regional con el mismo ID.
  */
-export const findTipoDocumentoByIdRepository = async (id) => {
-  return await TipoDocumento.findOne({
+export const findRegionalByIdRepository = async (id) => {
+  return await Regional.findOne({
     where: { id },
     attributes: ['id', 'codigo', 'nombre', 'activo']
   });
 };
 
 /**
- * Verificar si existe un tipo de documento con el mismo nombre.
+ * Verificar si existe una regional con el mismo nombre.
  */
-export const findTipoDocumentoByNombreRepository = async (nombre) => {
-  return await TipoDocumento.findOne({
+export const findRegionalByNombreRepository = async (nombre) => {
+  return await Regional.findOne({
     where: {
       nombre: nombre,
       activo: true
@@ -171,10 +173,10 @@ export const findTipoDocumentoByNombreRepository = async (nombre) => {
 };
 
 /**
- * Verificar si existe un tipo de documento con el mismo nombre, excluyendo un ID específico.
+ * Verificar si existe una regional con el mismo nombre, excluyendo un ID específico.
  */
-export const findTipoDocumentoByNombreExcludingIdRepository = async (nombre, idExcluir) => {
-  return await TipoDocumento.findOne({
+export const findRegionalByNombreExcludingIdRepository = async (nombre, idExcluir) => {
+  return await Regional.findOne({
     where: {
       nombre: {
         [Op.like]: nombre
@@ -186,3 +188,13 @@ export const findTipoDocumentoByNombreExcludingIdRepository = async (nombre, idE
     attributes: ['id', 'codigo', 'nombre', 'activo']
   });
 };
+
+/**
+ * Verificar si una regional tiene centros asociados.
+ */
+export const checkRegionalHasCentrosRepository = async (id) => {
+  const { countCentrosByRegionalRepository } = await import("./centro.repository.js");
+  const count = await countCentrosByRegionalRepository(id);
+  return count > 0;
+};
+

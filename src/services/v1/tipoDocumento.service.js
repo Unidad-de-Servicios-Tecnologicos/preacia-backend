@@ -6,19 +6,21 @@ import {
     showTipoDocumentoRepository,
     updateTipoDocumentoRepository,
     findTipoDocumentoByIdRepository,
+    findTipoDocumentoByCodigoRepository,
+    findTipoDocumentoByCodigoExcludingIdRepository,
     findTipoDocumentoByNombreRepository,
     findTipoDocumentoByNombreExcludingIdRepository,
 } from "../../repositories/tipoDocumento.repository.js";
-import { EstadoEnum } from "../../enums/estado.enum.js";
 
 /**
- * Servicio para obtener centros con filtros, orden y paginación.
+ * Servicio para obtener tipos de documentos con filtros, orden y paginación.
  */
 export const getTipoDocumentosService = async (req) => {
     const {
         id,
+        codigo,
         nombre,
-        estado,
+        activo,
         search, // Agregamos el parámetro search
         sortBy = "id",
         order = "ASC",
@@ -26,17 +28,18 @@ export const getTipoDocumentosService = async (req) => {
         limit = 10
     } = req.query;
 
-    // Convertir estado string a boolean si es necesario
-    let estadoBoolean = estado;
-    if (estado === 'true' || estado === 'activo') estadoBoolean = true;
-    if (estado === 'false' || estado === 'inactivo') estadoBoolean = false;
-    if (estado === undefined || estado === null || estado === 'todos') estadoBoolean = undefined;
+    // Convertir activo string a boolean si es necesario
+    let activoBoolean = activo;
+    if (activo === 'true' || activo === 'activo') activoBoolean = true;
+    if (activo === 'false' || activo === 'inactivo') activoBoolean = false;
+    if (activo === undefined || activo === null || activo === 'todos') activoBoolean = undefined;
 
     // Lógica de filtros y paginación delegada al repositorio
     const { data, count } = await getTipoDocumentosRepository({
         id,
+        codigo,
         nombre,
-        estado: estadoBoolean,
+        activo: activoBoolean,
         search, // Pasamos el parámetro search al repositorio
         sortBy,
         order,
@@ -70,19 +73,19 @@ export const getTipoDocumentosService = async (req) => {
 /**
  * Servicio para obtener la lista de tipos de documentos.
  */
-export const getListTipoDocumentosService = async (estado, sortBy = "id", order = "ASC") => {
-    return await getListTipoDocumentosRepository(estado, sortBy, order);
+export const getListTipoDocumentosService = async (activo, sortBy = "id", order = "ASC") => {
+    return await getListTipoDocumentosRepository(activo, sortBy, order);
 };
 
 /**
  * Servicio para crear un nuevo tipo de documento.
  */
 export const storeTipoDocumentoService = async (data) => {
-    // Verificar si ya existe un centro con el mismo código
-    const existingTipoDocumentoById = await findTipoDocumentoByIdRepository(data.id);
-    if (existingTipoDocumentoById) {
-        const error = new Error(`El ID ${data.id} ya está registrado. No se puede repetir el ID.`);
-        error.code = "DUPLICATE_TIPO_DOCUMENTO_ID";
+    // Verificar si ya existe un tipo de documento con el mismo código
+    const existingTipoDocumentoByCodigo = await findTipoDocumentoByCodigoRepository(data.codigo);
+    if (existingTipoDocumentoByCodigo) {
+        const error = new Error(`El código ${data.codigo.toUpperCase()} ya está registrado. No se puede repetir el código.`);
+        error.code = "DUPLICATE_TIPO_DOCUMENTO_CODIGO";
         throw error;
     }
 
@@ -115,6 +118,16 @@ export const updateTipoDocumentoService = async (id, data) => {
         throw error;
     }
 
+    // Si se está actualizando el código, verificar que no exista otro tipo de documento con el mismo código
+    if (data.codigo && data.codigo.toUpperCase() !== tipoDocumento.codigo) {
+        const existingTipoDocumentoByCodigo = await findTipoDocumentoByCodigoExcludingIdRepository(data.codigo, id);
+        if (existingTipoDocumentoByCodigo) {
+            const error = new Error(`El código "${data.codigo.toUpperCase()}" ya está registrado. No se puede repetir el código.`);
+            error.code = "DUPLICATE_TIPO_DOCUMENTO_CODIGO";
+            throw error;
+        }
+    }
+
     // Si se está actualizando el nombre, verificar que no exista otro tipo de documento con el mismo nombre
     if (data.nombre && data.nombre !== tipoDocumento.nombre) {
         const existingTipoDocumentoByNombre = await findTipoDocumentoByNombreExcludingIdRepository(data.nombre, id);
@@ -131,7 +144,7 @@ export const updateTipoDocumentoService = async (id, data) => {
 /**
  * Servicio para cambiar estado de un tipo de documento.
  */
-export const changeTipoDocumentoStatusService = async (id, nuevoEstado) => {
+export const changeTipoDocumentoStatusService = async (id, nuevoActivo) => {
     const tipoDocumento = await showTipoDocumentoRepository(id);
     if (!tipoDocumento) {
         const error = new Error("Tipo de documento no encontrado");
@@ -140,24 +153,23 @@ export const changeTipoDocumentoStatusService = async (id, nuevoEstado) => {
     }
 
     // Determinar el nuevo estado basado en el parámetro recibido
-    let nuevoEstadoEnum;
+    let nuevoEstado;
     
-    if (typeof nuevoEstado === 'boolean') {
+    if (typeof nuevoActivo === 'boolean') {
         // Si es boolean, usar directamente
-        nuevoEstadoEnum = nuevoEstado ? EstadoEnum.ACTIVO : EstadoEnum.INACTIVO;
-    } else if (nuevoEstado === 'true') {
+        nuevoEstado = nuevoActivo;
+    } else if (nuevoActivo === 'true') {
         // Si es string 'true', activar
-        nuevoEstadoEnum = EstadoEnum.ACTIVO;
-    } else if (nuevoEstado === 'false') {
+        nuevoEstado = true;
+    } else if (nuevoActivo === 'false') {
         // Si es string 'false', desactivar
-        nuevoEstadoEnum = EstadoEnum.INACTIVO;
+        nuevoEstado = false;
     } else {
         // Si no se especifica estado, alternar el estado actual
-        const estadoActual = tipoDocumento.estado;
-        nuevoEstadoEnum = estadoActual ? EstadoEnum.INACTIVO : EstadoEnum.ACTIVO;
+        nuevoEstado = !tipoDocumento.activo;
     }
 
     // Actualizar el estado del tipo de documento
-    const updatedTipoDocumento = await updateTipoDocumentoRepository(id, { estado: nuevoEstadoEnum });
+    const updatedTipoDocumento = await updateTipoDocumentoRepository(id, { activo: nuevoEstado });
     return updatedTipoDocumento;
 };

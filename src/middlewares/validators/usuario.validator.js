@@ -1,4 +1,4 @@
-import { body } from "express-validator";
+import { body, param } from "express-validator";
 import { Op } from "sequelize";
 import Usuario from "../../models/usuario.model.js";
 import TipoDocumento from "../../models/tipoDocumento.model.js";
@@ -7,6 +7,24 @@ import Rol from "../../models/rol.model.js";
 // Expresiones regulares
 const onlyNumbers = /^[0-9]+$/;
 const onlyLetters = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/;
+
+// Validador para parámetro ID
+export const idParamValidator = [
+    param('id')
+        .isNumeric()
+        .withMessage('El ID debe ser numérico.')
+        .notEmpty()
+        .withMessage('El ID es obligatorio.')
+];
+
+// Validador para cambiar estado
+export const cambiarEstadoUsuarioValidator = [
+    body('estado')
+        .isBoolean()
+        .withMessage('El estado debe ser un valor booleano (true o false).')
+        .notEmpty()
+        .withMessage('El estado es obligatorio.')
+];
 
 export const registerUserValidator = [
     body("rol_nombre")

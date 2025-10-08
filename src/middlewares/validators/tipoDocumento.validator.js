@@ -10,49 +10,66 @@ const idParamValidator = [
 
 
 const cambiarEstadoValidator = [
-    body('estado')
-        .isIn(Object.values(EstadoEnum))
-        .withMessage('El estado debe ser un valor enum (ACTIVO o INACTIVO).')
+    body('activo')
+        .isBoolean()
+        .withMessage('El estado debe ser un valor booleano (true o false).')
         .notEmpty()
         .withMessage('El estado es obligatorio.')
 ];
 
 const createTipoDocumentoValidator = [
+    body('codigo')
+        .isString()
+        .withMessage('El código debe ser una cadena de texto.')
+        .isLength({ min: 2, max: 10 })
+        .withMessage('El código debe tener entre 2 y 10 caracteres.')
+        .matches(/^[A-Z0-9_-]+$/)
+        .withMessage('El código solo puede contener letras mayúsculas, números, guiones y guiones bajos.')
+        .notEmpty()
+        .withMessage('El código es obligatorio.')
+        .trim()
+        .toUpperCase(),
 
     body('nombre')
         .isString()
         .withMessage('El nombre debe ser una cadena de texto.')
-        .isLength({ min: 3, max: 45 })
-        .withMessage('El nombre debe tener entre 3 y 45 caracteres.')
+        .isLength({ min: 3, max: 100 })
+        .withMessage('El nombre debe tener entre 3 y 100 caracteres.')
         .notEmpty()
         .withMessage('El nombre es obligatorio.')
         .trim(),
 
-    body('estado')
-        .isIn(Object.values(EstadoEnum))
-        .withMessage('El estado debe ser un valor enum (ACTIVO o INACTIVO).')
-        .notEmpty()
-        .withMessage('El estado es obligatorio.')
-        .trim(),
+    body('activo')
+        .optional()
+        .isBoolean()
+        .withMessage('El estado debe ser un valor booleano (true o false).'),
 ];
 
-// Validador para actualización (NO valida el código porque ya existe)
+// Validador para actualización
 const updateTipoDocumentoValidator = [
-    // Permitir cambio de código solo si es diferente al actual
+    body('codigo')
+        .optional()
+        .trim()
+        .isString()
+        .withMessage('El código debe ser una cadena de texto.')
+        .isLength({ min: 2, max: 10 })
+        .withMessage('El código debe tener entre 2 y 10 caracteres.')
+        .matches(/^[A-Z0-9_-]+$/)
+        .withMessage('El código solo puede contener letras mayúsculas, números, guiones y guiones bajos.')
+        .toUpperCase(),
 
     body('nombre')
         .optional()
         .trim()
         .isString()
         .withMessage('El nombre debe ser una cadena de texto.')
-        .isLength({ min: 3, max: 45 })
-        .withMessage('El nombre debe tener entre 3 y 45 caracteres.'),
+        .isLength({ min: 3, max: 100 })
+        .withMessage('El nombre debe tener entre 3 y 100 caracteres.'),
 
-    body('estado')
+    body('activo')
         .optional()
-        .isIn(Object.values(EstadoEnum))
-        .withMessage('El estado debe ser un valor enum (ACTIVO o INACTIVO).')
-        .trim(),
+        .isBoolean()
+        .withMessage('El estado debe ser un valor booleano (true o false).'),
 ];
 
 export { idParamValidator, createTipoDocumentoValidator, updateTipoDocumentoValidator, cambiarEstadoValidator };

@@ -42,18 +42,18 @@ export const getTipoDocumentos = async (req, res) => {
 
 export const getListTipoDocumentos = async (req, res) => {
   try {
-    let { estado, sortBy = "id", order = "ASC" } = req.query;
-    if (estado !== undefined) {
-      if (estado === "true") estado = true;
-      else if (estado === "false") estado = false;
-      else estado = undefined;
+    let { activo, sortBy = "id", order = "ASC" } = req.query;
+    if (activo !== undefined) {
+      if (activo === "true") activo = true;
+      else if (activo === "false") activo = false;
+      else activo = undefined;
     }
 
-    const { data, count } = await getListTipoDocumentosService(estado, sortBy, order);
+    const { data, count } = await getListTipoDocumentosService(activo, sortBy, order);
 
     return successResponse(
       res,
-      formatJsonApiData(data, ["id", "nombre", "estado"]),
+      formatJsonApiData(data, ["id", "codigo", "nombre", "activo"]),
       200,
       { count }
     );
@@ -86,18 +86,19 @@ export const storeTipoDocumento = async (req, res) => {
       message: 'Tipo de documento creado exitosamente',
       data: {
         id: tipoDocumento.id,
+        codigo: tipoDocumento.codigo,
         nombre: tipoDocumento.nombre,
-        estado: tipoDocumento.estado,
+        activo: tipoDocumento.activo,
       }
     });
   } catch (error) {
     console.error("Error al crear tipo de documento:", error);
 
     // Si es error de código duplicado, mostrar mensaje claro
-    if (error.code === "DUPLICATE_TIPO_DOCUMENTO_CODE") {
+    if (error.code === "DUPLICATE_TIPO_DOCUMENTO_CODIGO") {
       return res.status(400).json({
         success: false,
-        message: error.message // "El código XXXX ya está registrado. No se puede repetir el código."
+        message: error.message
       });
     }
 
@@ -105,7 +106,7 @@ export const storeTipoDocumento = async (req, res) => {
     if (error.code === "DUPLICATE_TIPO_DOCUMENTO_NAME") {
       return res.status(400).json({
         success: false,
-        message: error.message // "El nombre XXXX ya está registrado. No se puede repetir el nombre."
+        message: error.message
       });
     }
 
@@ -122,10 +123,10 @@ export const showTipoDocumento = async (req, res) => {
     const tipoDocumento = await showTipoDocumentoService(req.params.id);
 
     if (!tipoDocumento) {
-      return errorResponse(res, "No existe un tipo de documento con el código", 404, [
+      return errorResponse(res, "No existe un tipo de documento con el ID especificado", 404, [
         {
           code: "TIPO_DOCUMENTO_NOT_FOUND",
-          detail: `No existe un tipo de documento con código ${req.params.codigo}`,
+          detail: `No existe un tipo de documento con ID ${req.params.id}`,
         },
       ]);
     }
@@ -134,8 +135,9 @@ export const showTipoDocumento = async (req, res) => {
       res,
       {
         id: tipoDocumento.id,
+        codigo: tipoDocumento.codigo,
         nombre: tipoDocumento.nombre,
-        estado: tipoDocumento.estado,
+        activo: tipoDocumento.activo,
       },
       200
     );
@@ -160,19 +162,24 @@ export const updateTipoDocumento = async (req, res) => {
   }
 
   try {
-    const tipoDocumento = await updateTipoDocumentoService(req.params.codigo, req.body);
+    const tipoDocumento = await updateTipoDocumentoService(req.params.id, req.body);
 
     if (!tipoDocumento) {
       return res.status(404).json({
         success: false,
-        message: `No existe un tipo de documento con código ${req.params.codigo}`
+        message: `No existe un tipo de documento con ID ${req.params.id}`
       });
     }
 
     return res.status(200).json({
       success: true,
       message: 'Tipo de documento actualizado exitosamente',
-      data: centro
+      data: {
+        id: tipoDocumento.id,
+        codigo: tipoDocumento.codigo,
+        nombre: tipoDocumento.nombre,
+        activo: tipoDocumento.activo,
+      }
     });
   } catch (error) {
     console.error("Error al actualizar el tipo de documento:", error);
@@ -180,15 +187,15 @@ export const updateTipoDocumento = async (req, res) => {
     if (error.code === "NOT_FOUND") {
       return res.status(404).json({
         success: false,
-        message: `No existe un tipo de documento con id ${req.params.id}`
+        message: `No existe un tipo de documento con ID ${req.params.id}`
       });
     }
 
     // Manejo del error de código duplicado
-    if (error.code === "DUPLICATE_TIPO_DOCUMENTO_ID") {
+    if (error.code === "DUPLICATE_TIPO_DOCUMENTO_CODIGO") {
       return res.status(400).json({
         success: false,
-        message: error.message // "El id XXXX ya está registrado. No se puede repetir el id."
+        message: error.message
       });
     }
 
@@ -221,14 +228,15 @@ export const changeTipoDocumentoStatus = async (req, res) => {
   }
 
   try {
-    const tipoDocumento = await changeTipoDocumentoStatusService(req.params.id, req.body.estado);
+    const tipoDocumento = await changeTipoDocumentoStatusService(req.params.id, req.body.activo);
 
     return successResponse(
       res,
       {
         id: tipoDocumento.id,
+        codigo: tipoDocumento.codigo,
         nombre: tipoDocumento.nombre,
-        estado: tipoDocumento.estado, // Esto debe ser true o false
+        activo: tipoDocumento.activo,
       },
       200
     );
@@ -240,15 +248,6 @@ export const changeTipoDocumentoStatus = async (req, res) => {
       return errorResponse(res, "Tipo de documento no encontrado", 404, [
         {
           code: "TIPO_DOCUMENTO_NOT_FOUND",
-          detail: error.message,
-        },
-      ]);
-    }
-
-    if (error.code === "TIPO_DOCUMENTO_HAS_SUPERVISORES") {
-      return errorResponse(res, "No se puede desactivar", 409, [
-        {
-          code: "TIPO_DOCUMENTO_HAS_SUPERVISORES",
           detail: error.message,
         },
       ]);
