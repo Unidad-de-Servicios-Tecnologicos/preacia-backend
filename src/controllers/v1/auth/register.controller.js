@@ -13,7 +13,7 @@ const register = [
     async (req, res) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            return errorResponse(res, 'Error de validación', 422, errors.array());
+            return errorResponse(res, 'Error de validación en los datos enviados.', 422, errors.array());
         }
         try {
             const result = await registerUserService(req.body);

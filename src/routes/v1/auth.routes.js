@@ -5,17 +5,18 @@ import forgotPassword from "../../controllers/v1/auth/forgotPassword.controller.
 import resetPassword from "../../controllers/v1/auth/resetPassword.controller.js";
 import refreshToken from "../../controllers/v1/auth/refreshToken.controller.js";
 import changePassword from "../../controllers/v1/auth/changePassword.controller.js";
-import { verificarToken } from "../../middlewares/auth.middleware.js"; 
-import { changePasswordValidator } from "../../middlewares/validators/changePassword.validator.js"; 
-import { validateRequest } from "../../middlewares/validateRequest.middleware.js"; 
+import { verificarToken } from "../../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
+// Rutas de autenticación públicas
 router.post("/register", register);
 router.post('/login', login);
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
 router.post('/refresh', refreshToken);
-router.patch('/change-password', verificarToken, changePasswordValidator, validateRequest, changePassword);
+
+// Rutas de autenticación protegidas (requieren token válido)
+router.patch('/change-password', verificarToken, changePassword);
 
 export default router;
