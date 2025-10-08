@@ -280,21 +280,21 @@ ON DUPLICATE KEY UPDATE rol_id = VALUES(rol_id);
 
 SET @password = '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy';
 
-INSERT INTO usuarios (regional_id, tipo_documento_id, documento, nombres, apellidos, correo, telefono, direccion, contrasena, estado, acia_id, verificado_acia, password_debe_cambiar, created_at, updated_at) VALUES
+INSERT INTO usuarios (regional_id, tipo_documento_id, documento, nombres, apellidos, correo, telefono, direccion, contrasena, estado, ultimo_acceso, intentos_fallidos, bloqueado_hasta, ultimo_cambio_password, password_debe_cambiar, reset_token, reset_token_expires, created_by, created_at, updated_at) VALUES
 -- Usuario 1: Admin Nacional
-(NULL, 1, '1234567890', 'Admin', 'Nacional', 'admin@sena.edu.co', '3001234567', 'Calle 57 No. 8-69, Bogotá', @password, TRUE, 'ACIA-ADMIN-001', TRUE, FALSE, NOW(), NOW()),
+(NULL, 1, '1234567890', 'Admin', 'Nacional', 'admin@sena.edu.co', '3001234567', 'Calle 57 No. 8-69, Bogotá', @password, TRUE, NULL, 0, NULL, NOW(), FALSE, NULL, NULL, NULL, NOW(), NOW()),
 
 -- Usuario 2: Director Regional Antioquia
-(1, 1, '9876543210', 'María', 'Rodríguez', 'maria.rodriguez@sena.edu.co', '3009876543', 'Calle 52 No. 48-09, Medellín', @password, TRUE, 'ACIA-DIR-001', TRUE, FALSE, NOW(), NOW()),
+(1, 1, '9876543210', 'María', 'Rodríguez', 'maria.rodriguez@sena.edu.co', '3009876543', 'Calle 52 No. 48-09, Medellín', @password, TRUE, NULL, 0, NULL, NOW(), FALSE, NULL, NULL, 1, NOW(), NOW()),
 
 -- Usuario 3: Administrador de Centro Bogotá
-(NULL, 1, '1122334455', 'Carlos', 'Gómez', 'carlos.gomez@sena.edu.co', '3011223344', 'Calle 57 No. 8-69, Bogotá', @password, TRUE, 'ACIA-ADM-001', TRUE, FALSE, NOW(), NOW()),
+(NULL, 1, '1122334455', 'Carlos', 'Gómez', 'carlos.gomez@sena.edu.co', '3011223344', 'Calle 57 No. 8-69, Bogotá', @password, TRUE, NULL, 0, NULL, NOW(), FALSE, NULL, NULL, 1, NOW(), NOW()),
 
 -- Usuario 4: Revisor Medellín
-(NULL, 1, '2233445566', 'Ana', 'Martínez', 'ana.martinez@sena.edu.co', '3022334455', 'Calle 52 No. 48-09, Medellín', @password, TRUE, NULL, FALSE, FALSE, NOW(), NOW()),
+(NULL, 1, '2233445566', 'Ana', 'Martínez', 'ana.martinez@sena.edu.co', '3022334455', 'Calle 52 No. 48-09, Medellín', @password, TRUE, NULL, 0, NULL, NOW(), FALSE, NULL, NULL, 1, NOW(), NOW()),
 
 -- Usuario 5: Revisor + Admin Centro Barranquilla (múltiples roles)
-(NULL, 1, '3344556677', 'Pedro', 'López', 'pedro.lopez@sena.edu.co', '3033445566', 'Calle 44 No. 43-70, Barranquilla', @password, TRUE, 'ACIA-REV-002', TRUE, FALSE, NOW(), NOW())
+(NULL, 1, '3344556677', 'Pedro', 'López', 'pedro.lopez@sena.edu.co', '3033445566', 'Calle 44 No. 43-70, Barranquilla', @password, TRUE, NULL, 0, NULL, NOW(), FALSE, NULL, NULL, 1, NOW(), NOW())
 ON DUPLICATE KEY UPDATE nombres = VALUES(nombres), apellidos = VALUES(apellidos), estado = VALUES(estado), updated_at = NOW();
 
 -- =============================================================================

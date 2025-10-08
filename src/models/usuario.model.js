@@ -12,6 +12,15 @@ const Usuario = sequelize.define(
             autoIncrement: true,
             allowNull: false,
         },
+        regional_id: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+            references: {
+                model: 'regionales',
+                key: 'id',
+            },
+            comment: 'Regional asignada (obligatorio para director_regional)',
+        },
         tipo_documento_id: {
             type: DataTypes.INTEGER,
             allowNull: false,
@@ -26,7 +35,7 @@ const Usuario = sequelize.define(
             unique: true,
         },
         nombres: {
-            type: DataTypes.STRING(100),
+            type: DataTypes.STRING(150),
             allowNull: false,
             set(value) {
                 this.setDataValue(
@@ -38,7 +47,7 @@ const Usuario = sequelize.define(
             },
         },
         apellidos: {
-            type: DataTypes.STRING(100),
+            type: DataTypes.STRING(150),
             allowNull: true,
             set(value) {
                 this.setDataValue(
@@ -50,7 +59,7 @@ const Usuario = sequelize.define(
             },
         },
         correo: {
-            type: DataTypes.STRING(50),
+            type: DataTypes.STRING(100),
             allowNull: false,
             unique: true,
             set(value) {
@@ -61,11 +70,11 @@ const Usuario = sequelize.define(
             },
         },
         telefono: {
-            type: DataTypes.STRING(15),
+            type: DataTypes.STRING(20),
             allowNull: true,
         },
         direccion: {
-            type: DataTypes.STRING(100),
+            type: DataTypes.STRING(200),
             allowNull: true,
         },
         contrasena: {
@@ -81,24 +90,44 @@ const Usuario = sequelize.define(
             type: DataTypes.DATE,
             allowNull: true,
         },
-        acia_id: {
-            type: DataTypes.STRING(50),
-            allowNull: true,
-            comment: 'ID en sistema externo ACIA',
+        intentos_fallidos: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            defaultValue: 0,
+            comment: 'Número de intentos fallidos de login',
         },
-        verificado_acia: {
+        bloqueado_hasta: {
+            type: DataTypes.DATE,
+            allowNull: true,
+            comment: 'Fecha hasta la cual el usuario está bloqueado',
+        },
+        ultimo_cambio_password: {
+            type: DataTypes.DATE,
+            allowNull: true,
+            comment: 'Fecha del último cambio de contraseña',
+        },
+        password_debe_cambiar: {
             type: DataTypes.BOOLEAN,
             allowNull: false,
             defaultValue: false,
-            comment: 'Si fue verificado en sistema ACIA',
+            comment: 'Cambio obligatorio en primer login',
         },
         reset_token: {
-            type: DataTypes.STRING,
+            type: DataTypes.STRING(255),
             allowNull: true,
         },
         reset_token_expires: {
             type: DataTypes.DATE,
             allowNull: true,
+        },
+        created_by: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+            references: {
+                model: 'usuarios',
+                key: 'id',
+            },
+            comment: 'Usuario que creó este usuario',
         },
     },
     {

@@ -61,7 +61,8 @@ export const getListUsuarios = async (req, res) => {
 export const storeUsuario = async (req, res) => {
     try {
         const data = req.body;
-        const nuevoUsuario = await storeUsuarioService(data);
+        const usuarioCreadorId = req.usuario ? req.usuario.id : null;
+        const nuevoUsuario = await storeUsuarioService(data, usuarioCreadorId);
 
         return successResponse(
             res,

@@ -83,12 +83,15 @@ export const getUsersRepository = async ({
     const orderBy = allowedSort.includes(sortBy) ? sortBy : "id";
     const orderDirection = order.toUpperCase() === "DESC" ? "DESC" : "ASC";
 
-    // Include para relación N:M con roles
+    // Importar modelos necesarios para includes
+    const { TipoDocumento, Regional, Centro } = await import('../models/index.js');
+
+    // Include para relaciones
     let include = [
         {
             model: Rol,
             as: 'roles',
-            attributes: ['id', 'nombre'],
+            attributes: ['id', 'nombre', 'descripcion'],
             through: { 
                 attributes: ['estado'],
                 where: { estado: true }
@@ -96,6 +99,26 @@ export const getUsersRepository = async ({
             where: rol_nombre
                 ? { nombre: { [Op.like]: `%${rol_nombre}%` } }
                 : undefined
+        },
+        {
+            model: TipoDocumento,
+            as: 'tipo_documento',
+            attributes: ['id', 'codigo', 'nombre']
+        },
+        {
+            model: Regional,
+            as: 'regional',
+            attributes: ['id', 'codigo', 'nombre']
+        },
+        {
+            model: Centro,
+            as: 'centros',
+            attributes: ['id', 'codigo', 'nombre', 'regional_id'],
+            through: { 
+                attributes: ['estado'],
+                where: { estado: true }
+            },
+            required: false
         }
     ];
 
@@ -116,24 +139,42 @@ export const getUsersRepository = async ({
 };
 
 export const findUsuarioById = async (id) => {
+    const { TipoDocumento, Regional, Centro } = await import('../models/index.js');
+    
     return await Usuario.findByPk(id, {
         include: [
             {
                 model: Rol,
                 as: 'roles',
-                attributes: ['id', 'nombre'],
+                attributes: ['id', 'nombre', 'descripcion'],
                 through: { 
                     attributes: ['estado'],
                     where: { estado: true }
                 }
             },
             {
-                association: 'centros',
-                attributes: ['id', 'nombre', 'codigo'],
+                model: Centro,
+                as: 'centros',
+                attributes: ['id', 'nombre', 'codigo', 'regional_id'],
                 through: { 
                     attributes: ['estado'],
                     where: { estado: true }
                 }
+            },
+            {
+                model: TipoDocumento,
+                as: 'tipo_documento',
+                attributes: ['id', 'codigo', 'nombre']
+            },
+            {
+                model: Regional,
+                as: 'regional',
+                attributes: ['id', 'codigo', 'nombre']
+            },
+            {
+                model: Usuario,
+                as: 'creador',
+                attributes: ['id', 'nombres', 'apellidos', 'correo']
             }
         ]
     });

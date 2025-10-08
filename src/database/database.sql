@@ -125,8 +125,6 @@ CREATE TABLE IF NOT EXISTS usuarios (
     bloqueado_hasta TIMESTAMP NULL,
     ultimo_cambio_password TIMESTAMP NULL,
     password_debe_cambiar BOOLEAN DEFAULT FALSE COMMENT 'Cambio obligatorio en primer login',
-    acia_id VARCHAR(50) NULL COMMENT 'ID en sistema externo ACIA',
-    verificado_acia BOOLEAN DEFAULT FALSE COMMENT 'Si fue verificado en sistema ACIA',
     reset_token VARCHAR(255),
     reset_token_expires TIMESTAMP NULL,
     created_by INT NULL COMMENT 'Usuario que creó este usuario',
@@ -138,8 +136,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
     INDEX idx_regional (regional_id),
     INDEX idx_estado (estado),
     INDEX idx_correo (correo),
-    INDEX idx_documento (documento),
-    INDEX idx_acia (acia_id)
+    INDEX idx_documento (documento)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Usuarios administrativos con autenticación';
 
 -- Tabla: rol_permiso

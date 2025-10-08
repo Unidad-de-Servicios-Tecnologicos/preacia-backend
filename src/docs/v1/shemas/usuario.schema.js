@@ -74,25 +74,50 @@ export const usuarioSchemas = {
                 example: true,
                 default: true
             },
+            regional_id: {
+                type: 'integer',
+                description: 'ID de la regional asignada (obligatorio para director_regional)',
+                example: 1,
+                nullable: true
+            },
             ultimo_acceso: {
                 type: 'string',
                 format: 'date-time',
                 description: 'Fecha del último acceso al sistema',
-                example: '2024-01-15T10:30:00.000Z',
+                example: '2025-10-08T10:30:00.000Z',
                 nullable: true
             },
-            acia_id: {
+            intentos_fallidos: {
+                type: 'integer',
+                description: 'Número de intentos fallidos de inicio de sesión',
+                example: 0,
+                default: 0
+            },
+            bloqueado_hasta: {
                 type: 'string',
-                maxLength: 50,
-                description: 'ID en sistema externo ACIA',
-                example: 'ACIA-12345',
+                format: 'date-time',
+                description: 'Fecha hasta la cual el usuario está bloqueado',
+                example: null,
                 nullable: true
             },
-            verificado_acia: {
+            ultimo_cambio_password: {
+                type: 'string',
+                format: 'date-time',
+                description: 'Fecha del último cambio de contraseña',
+                example: '2025-10-08T10:30:00.000Z',
+                nullable: true
+            },
+            password_debe_cambiar: {
                 type: 'boolean',
-                description: 'Indica si el usuario está verificado por ACIA',
+                description: 'Indica si el usuario debe cambiar su contraseña en el próximo inicio de sesión',
                 example: false,
                 default: false
+            },
+            created_by: {
+                type: 'integer',
+                description: 'ID del usuario que creó este registro',
+                example: 1,
+                nullable: true
             },
             centros: {
                 type: 'array',

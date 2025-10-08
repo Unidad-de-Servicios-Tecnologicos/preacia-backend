@@ -13,13 +13,19 @@ const login = [
         try {
             const result = await loginUserService(req.body);
             if (!result.success) {
-                return errorResponse(res, result.message, 401);
+                return errorResponse(res, result.message, result.status || 401);
             }
-            return successResponse(res, {
-                message: 'Inicio de sesión exitoso.',
+            
+            const response = {
+                message: result.password_debe_cambiar 
+                    ? 'Inicio de sesión exitoso. Debe cambiar su contraseña.'
+                    : 'Inicio de sesión exitoso.',
                 usuario: result.usuario,
-                token: result.token
-            }, 200);
+                token: result.token,
+                password_debe_cambiar: result.password_debe_cambiar
+            };
+
+            return successResponse(res, response, 200);
         } catch (error) {
             return errorResponse(res, error.message || 'Error al iniciar sesión.', 500, error.details);
         }

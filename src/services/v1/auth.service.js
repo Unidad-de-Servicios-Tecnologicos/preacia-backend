@@ -105,9 +105,49 @@ export const loginUserService = async ({ login, contrasena }) => {
         return { success: false, message: 'La cuenta está inactiva.', status: 403 };
     }
 
+    // Verificar si el usuario está bloqueado
+    if (user.bloqueado_hasta && new Date() < new Date(user.bloqueado_hasta)) {
+        const minutosRestantes = Math.ceil((new Date(user.bloqueado_hasta) - new Date()) / 60000);
+        return { 
+            success: false, 
+            message: `Cuenta bloqueada temporalmente por múltiples intentos fallidos. Intente nuevamente en ${minutosRestantes} minutos.`, 
+            status: 403 
+        };
+    }
+
     const isMatch = await Usuario.comparePassword(contrasena, user.contrasena);
     if (!isMatch) {
-        return { success: false, message: 'Contraseña incorrecta.', status: 401 };
+        // Incrementar intentos fallidos
+        const nuevosIntentos = (user.intentos_fallidos || 0) + 1;
+        const MAX_INTENTOS = 5;
+        const TIEMPO_BLOQUEO_MINUTOS = 30;
+
+        if (nuevosIntentos >= MAX_INTENTOS) {
+            // Bloquear usuario
+            const bloqueadoHasta = new Date(Date.now() + TIEMPO_BLOQUEO_MINUTOS * 60000);
+            await user.update({
+                intentos_fallidos: nuevosIntentos,
+                bloqueado_hasta: bloqueadoHasta
+            });
+
+            return { 
+                success: false, 
+                message: `Demasiados intentos fallidos. Cuenta bloqueada por ${TIEMPO_BLOQUEO_MINUTOS} minutos.`, 
+                status: 403 
+            };
+        } else {
+            // Incrementar contador
+            await user.update({
+                intentos_fallidos: nuevosIntentos
+            });
+
+            const intentosRestantes = MAX_INTENTOS - nuevosIntentos;
+            return { 
+                success: false, 
+                message: `Contraseña incorrecta. Le quedan ${intentosRestantes} intento(s) antes de que su cuenta sea bloqueada.`, 
+                status: 401 
+            };
+        }
     }
 
     // Obtener nombres de todos los roles
@@ -146,6 +186,13 @@ export const loginUserService = async ({ login, contrasena }) => {
     // Convertir el mapa a array
     const permisosCombinados = Array.from(permisosMap.values());
 
+    // Resetear intentos fallidos y actualizar último acceso
+    await user.update({
+        intentos_fallidos: 0,
+        bloqueado_hasta: null,
+        ultimo_acceso: new Date()
+    });
+
     // Genera el accessToken usando la función utilitaria
     const accessToken = generateAccessToken({
         id: user.id,
@@ -156,6 +203,7 @@ export const loginUserService = async ({ login, contrasena }) => {
 
     return {
         success: true,
+        password_debe_cambiar: user.password_debe_cambiar || false,
         usuario: {
             id: user.id,
             documento: user.documento,
@@ -165,11 +213,26 @@ export const loginUserService = async ({ login, contrasena }) => {
             telefono: user.telefono,
             direccion: user.direccion,
             estado: user.estado,
-            acia_id: user.acia_id,
-            verificado_acia: user.verificado_acia,
+            password_debe_cambiar: user.password_debe_cambiar || false,
+            tipo_documento: user.tipo_documento ? {
+                id: user.tipo_documento.id,
+                codigo: user.tipo_documento.codigo,
+                nombre: user.tipo_documento.nombre
+            } : null,
+            regional: user.regional ? {
+                id: user.regional.id,
+                codigo: user.regional.codigo,
+                nombre: user.regional.nombre
+            } : null,
             roles: user.roles ? user.roles.map(r => ({
                 id: r.id,
-                nombre: r.nombre
+                nombre: r.nombre,
+                descripcion: r.descripcion
+            })) : [],
+            centros: user.centros ? user.centros.map(c => ({
+                id: c.id,
+                codigo: c.codigo,
+                nombre: c.nombre
             })) : [],
             permisos: permisosCombinados
         },
@@ -244,7 +307,22 @@ export const resetPasswordService = async ({ correo, token, nueva_contrasena }) 
 
         // 5. Cambia la contraseña solo si todo coincide
         const hashedPassword = await hashPassword(nueva_contrasena);
-        await updateUserPassword(usuario.id, hashedPassword);
+        
+        // Actualizar contraseña y campos relacionados
+        await Usuario.update(
+            {
+                contrasena: hashedPassword,
+                ultimo_cambio_password: new Date(),
+                password_debe_cambiar: false,
+                reset_token: null,
+                reset_token_expires: null,
+                intentos_fallidos: 0,
+                bloqueado_hasta: null
+            },
+            {
+                where: { id: usuario.id }
+            }
+        );
 
         return { success: true, message: "Contraseña actualizada correctamente.", status: 200 };
     } catch (error) {
@@ -386,8 +464,19 @@ export const changePasswordService = async (userId, currentPassword, newPassword
         // Encriptar la nueva contraseña
         const hashedNewPassword = await hashPassword(newPassword);
 
-        // Actualizar la contraseña en la base de datos
-        await updateUserPassword(userId, hashedNewPassword);
+        // Actualizar la contraseña y campos relacionados en la base de datos
+        await Usuario.update(
+            {
+                contrasena: hashedNewPassword,
+                ultimo_cambio_password: new Date(),
+                password_debe_cambiar: false,
+                reset_token: null,
+                reset_token_expires: null
+            },
+            {
+                where: { id: userId }
+            }
+        );
 
         return {
             success: true,

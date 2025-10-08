@@ -7,6 +7,7 @@ import RolPermiso from './rolPermiso.model.js';
 import TipoDocumento from './tipoDocumento.model.js';
 import Regional from './regional.model.js';
 import Centro from './centro.model.js';
+import UsuarioCentro from './usuarioCentro.model.js';
 
 
 
@@ -76,6 +77,43 @@ Centro.belongsTo(Regional, {
   as: 'regional',
 });
 
+// Relación Usuario - Regional
+Usuario.belongsTo(Regional, {
+  foreignKey: 'regional_id',
+  as: 'regional',
+});
+
+Regional.hasMany(Usuario, {
+  foreignKey: 'regional_id',
+  as: 'usuarios',
+});
+
+// Relación Usuario - Centro (N:M)
+Usuario.belongsToMany(Centro, {
+  through: UsuarioCentro,
+  foreignKey: 'usuario_id',
+  otherKey: 'centro_id',
+  as: 'centros',
+});
+
+Centro.belongsToMany(Usuario, {
+  through: UsuarioCentro,
+  foreignKey: 'centro_id',
+  otherKey: 'usuario_id',
+  as: 'usuarios',
+});
+
+// Relación Usuario - Usuario (self-relation para created_by)
+Usuario.belongsTo(Usuario, {
+  foreignKey: 'created_by',
+  as: 'creador',
+});
+
+Usuario.hasMany(Usuario, {
+  foreignKey: 'created_by',
+  as: 'usuarios_creados',
+});
+
 
 // Exportar todos los modelos
 export {
@@ -87,5 +125,6 @@ export {
   RolPermiso,
   TipoDocumento,
   Regional,
-  Centro
+  Centro,
+  UsuarioCentro
 };
