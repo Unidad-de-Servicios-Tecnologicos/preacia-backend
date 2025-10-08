@@ -296,7 +296,16 @@ export const regionalPaths = {
         get: {
             tags: ['Regional'],
             summary: 'Obtener una regional por ID',
-            description: 'Retorna los detalles de una regional específica. **ENDPOINT PÚBLICO - No requiere autenticación**',
+            description: `Retorna los detalles de una regional específica. 
+            
+**Requiere autenticación**
+
+**Permisos por rol:**
+- **ADMIN:** Puede ver cualquier regional
+- **DIRECTOR_REGIONAL:** Puede ver cualquier regional (lectura)
+- **ADMINISTRADOR_CENTRO:** Puede ver cualquier regional (lectura)
+- **REVISOR:** Puede ver cualquier regional (lectura)`,
+            security: [{ bearerAuth: [] }],
             parameters: [
                 {
                     name: 'id',
@@ -322,6 +331,52 @@ export const regionalPaths = {
                                     },
                                     data: {
                                         $ref: '#/components/schemas/Regional'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                401: {
+                    description: 'No autorizado - Token inválido o ausente',
+                    content: {
+                        'application/json': {
+                            schema: {
+                                $ref: '#/components/schemas/ErrorResponse'
+                            },
+                            examples: {
+                                noToken: {
+                                    summary: 'Sin token',
+                                    value: {
+                                        success: false,
+                                        message: 'Usuario no autenticado',
+                                        errors: [{
+                                            code: 'UNAUTHENTICATED',
+                                            detail: 'Debe estar autenticado para realizar esta acción'
+                                        }]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                403: {
+                    description: 'Prohibido - Sin permisos o cuenta no verificada',
+                    content: {
+                        'application/json': {
+                            schema: {
+                                $ref: '#/components/schemas/ErrorResponse'
+                            },
+                            examples: {
+                                noRoles: {
+                                    summary: 'Sin roles asignados',
+                                    value: {
+                                        success: false,
+                                        message: 'Usuario sin roles asignados',
+                                        errors: [{
+                                            code: 'NO_ROLES',
+                                            detail: 'El usuario no tiene roles activos'
+                                        }]
                                     }
                                 }
                             }
@@ -543,7 +598,18 @@ export const regionalPaths = {
         get: {
             tags: ['Regional'],
             summary: 'Obtener centros de formación de una regional',
-            description: 'Retorna una lista completa (sin paginación) de centros de formación asociados a una regional específica. **ENDPOINT PÚBLICO - No requiere autenticación**',
+            description: `Retorna una lista completa (sin paginación) de centros de formación asociados a una regional específica.
+
+**Requiere autenticación y validación de scope**
+
+**Permisos por rol:**
+- **ADMIN:** Puede ver centros de cualquier regional
+- **DIRECTOR_REGIONAL:** Solo puede ver centros de su regional asignada
+- **ADMINISTRADOR_CENTRO:** No tiene acceso
+- **REVISOR:** No tiene acceso
+
+**Validación de scope:** El sistema verifica que el DIRECTOR_REGIONAL solo pueda acceder a los centros de su regional.`,
+            security: [{ bearerAuth: [] }],
             parameters: [
                 {
                     name: 'id',
@@ -617,6 +683,74 @@ export const regionalPaths = {
                         }
                     }
                 },
+                401: {
+                    description: 'No autorizado - Token inválido o ausente',
+                    content: {
+                        'application/json': {
+                            schema: {
+                                $ref: '#/components/schemas/ErrorResponse'
+                            },
+                            examples: {
+                                noToken: {
+                                    summary: 'Sin token',
+                                    value: {
+                                        success: false,
+                                        message: 'Usuario no autenticado',
+                                        errors: [{
+                                            code: 'UNAUTHENTICATED',
+                                            detail: 'Debe estar autenticado para realizar esta acción'
+                                        }]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                403: {
+                    description: 'Prohibido - Sin acceso al scope o sin roles',
+                    content: {
+                        'application/json': {
+                            schema: {
+                                $ref: '#/components/schemas/ErrorResponse'
+                            },
+                            examples: {
+                                scopeDenied: {
+                                    summary: 'Acceso denegado por scope',
+                                    value: {
+                                        success: false,
+                                        message: 'No tiene acceso a esta regional',
+                                        errors: [{
+                                            code: 'SCOPE_DENIED',
+                                            detail: 'No tiene permisos para acceder a la regional 5. Solo puede acceder a su regional asignada.'
+                                        }]
+                                    }
+                                },
+                                noRoles: {
+                                    summary: 'Sin roles asignados',
+                                    value: {
+                                        success: false,
+                                        message: 'Usuario sin roles asignados',
+                                        errors: [{
+                                            code: 'NO_ROLES',
+                                            detail: 'El usuario no tiene roles activos'
+                                        }]
+                                    }
+                                },
+                                insufficientPermissions: {
+                                    summary: 'Sin permisos suficientes',
+                                    value: {
+                                        success: false,
+                                        message: 'No tiene permisos para acceder a regionales',
+                                        errors: [{
+                                            code: 'INSUFFICIENT_PERMISSIONS',
+                                            detail: 'Su rol no tiene permisos para acceder a este recurso'
+                                        }]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
                 404: {
                     description: 'Regional no encontrada',
                     content: {
@@ -633,6 +767,19 @@ export const regionalPaths = {
                         'application/json': {
                             schema: {
                                 $ref: '#/components/schemas/ErrorResponse'
+                            },
+                            examples: {
+                                scopeError: {
+                                    summary: 'Error en verificación de scope',
+                                    value: {
+                                        success: false,
+                                        message: 'Error al verificar permisos de acceso',
+                                        errors: [{
+                                            code: 'SCOPE_VERIFICATION_ERROR',
+                                            detail: 'Error interno al validar el scope del usuario'
+                                        }]
+                                    }
+                                }
                             }
                         }
                     }
