@@ -9,6 +9,7 @@ import {
     cambiarEstadoValidator 
 } from '../../middlewares/validators/regional.validator.js';
 import { verificarToken, verificarCuentaActiva, verificarRolOPermiso } from '../../middlewares/auth.middleware.js';
+import { verificarScope } from '../../middlewares/scope.middleware.js';
 import { RolEnum } from '../../enums/rol.enum.js';
 import { PermisoEnum } from '../../enums/permiso.enum.js';
   
@@ -24,7 +25,7 @@ router.get('/list',
   regionalController.getListRegionales
 );
 
-// Ruta para obtener centros de una regional específica (PÚBLICA)
+// Ruta para obtener centros de una regional específica (requiere autenticación y scope)
 router.get('/:id/centros',
   idParamValidator,
   regionalCentroController.getCentrosByRegional
@@ -63,7 +64,7 @@ router.patch('/:id/estado',
   regionalController.changeRegionalStatus
 );
 
-// Ruta para obtener una regional por id (PÚBLICA)
+// Ruta para obtener una regional por id (requiere autenticación, lectura permitida para todos)
 router.get('/:id',
   idParamValidator,
   regionalController.showRegional

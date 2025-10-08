@@ -34,17 +34,4 @@ export function requireJsonHeaders(req, res, next) {
   next();
 }
 
-const notFound = (req, res) => {
-  return errorResponse(
-    res,
-    'El endpoint solicitado no existe',
-    404,
-    {
-      code: 'ROUTE_NOT_FOUND',
-      method: req.method,
-      path: req.originalUrl,
-    }
-  );
-};
-
-export default notFound;
+export default requireJsonHeaders;
