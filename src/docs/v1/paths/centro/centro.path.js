@@ -3,8 +3,7 @@ export const centroPaths = {
         get: {
             tags: ['Centro'],
             summary: 'Obtener lista paginada de centros',
-            description: 'Retorna una lista paginada de centros con filtros opcionales',
-            security: [{ bearerAuth: [] }],
+            description: 'Retorna una lista paginada de centros con filtros opcionales. **ENDPOINT PÚBLICO - No requiere autenticación**',
             parameters: [
                 {
                     name: 'page',
@@ -48,7 +47,7 @@ export const centroPaths = {
                     }
                 },
                 {
-                    name: 'activo',
+                    name: 'estado',
                     in: 'query',
                     description: 'Filtrar por estado',
                     schema: {
@@ -100,12 +99,6 @@ export const centroPaths = {
                         }
                     }
                 },
-                401: {
-                    description: 'No autorizado'
-                },
-                403: {
-                    description: 'Prohibido'
-                },
                 500: {
                     description: 'Error del servidor'
                 }
@@ -149,8 +142,7 @@ export const centroPaths = {
         get: {
             tags: ['Centro'],
             summary: 'Obtener lista simplificada de centros',
-            description: 'Retorna una lista sin paginación de centros para selects y dropdowns',
-            security: [{ bearerAuth: [] }],
+            description: 'Retorna una lista sin paginación de centros para selects y dropdowns. **ENDPOINT PÚBLICO - No requiere autenticación**',
             parameters: [
                 {
                     name: 'regional_id',
@@ -161,7 +153,7 @@ export const centroPaths = {
                     }
                 },
                 {
-                    name: 'activo',
+                    name: 'estado',
                     in: 'query',
                     description: 'Filtrar por estado',
                     schema: {
@@ -194,9 +186,6 @@ export const centroPaths = {
                 200: {
                     description: 'Lista simplificada obtenida exitosamente'
                 },
-                401: {
-                    description: 'No autorizado'
-                },
                 500: {
                     description: 'Error del servidor'
                 }
@@ -207,8 +196,7 @@ export const centroPaths = {
         get: {
             tags: ['Centro'],
             summary: 'Obtener un centro por ID',
-            description: 'Retorna los detalles de un centro específico',
-            security: [{ bearerAuth: [] }],
+            description: 'Retorna los detalles de un centro específico. **ENDPOINT PÚBLICO - No requiere autenticación**',
             parameters: [
                 {
                     name: 'id',

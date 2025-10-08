@@ -1,9 +1,9 @@
 import { errorResponse, successResponse } from "../../../utils/response.util.js";
 import { showRegionalService } from "../../../services/v1/regional.service.js";
-import { getCentrosService } from "../../../services/v1/centro.service.js";
+import { getListCentrosService } from "../../../services/v1/centro.service.js";
 
 /**
- * Controlador para obtener todos los centros de una regional específica
+ * Controlador para obtener todos los centros de una regional específica (sin paginación)
  * @route GET /api/v1/regional/:id/centros
  */
 export const getCentrosByRegional = async (req, res) => {
@@ -12,9 +12,7 @@ export const getCentrosByRegional = async (req, res) => {
     const { 
       estado, 
       sortBy = "nombre", 
-      order = "ASC",
-      page = 1,
-      limit = 10 
+      order = "ASC"
     } = req.query;
 
     // Verificar que la regional existe
@@ -28,39 +26,16 @@ export const getCentrosByRegional = async (req, res) => {
       ]);
     }
 
-    // Crear un request modificado con el filtro de regional
-    const modifiedReq = {
-      ...req,
-      query: {
-        ...req.query,
-        regional_id: id,
-        estado,
-        sortBy,
-        order,
-        page,
-        limit
-      }
-    };
-
-    const {
-      data,
-      meta,
-      links
-    } = await getCentrosService(modifiedReq);
+    // Obtener centros sin paginación
+    const { data, count } = await getListCentrosService(id, estado, sortBy, order);
 
     return successResponse(
       res,
       data,
       200,
       {
-        ...meta,
-        regional: {
-          id: regional.id,
-          codigo: regional.codigo,
-          nombre: regional.nombre
-        }
-      },
-      links
+        count
+      }
     );
   } catch (error) {
     return errorResponse(res, "Error al obtener los centros de la regional", 500, [

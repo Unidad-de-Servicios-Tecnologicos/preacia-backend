@@ -42,18 +42,18 @@ export const getTipoDocumentos = async (req, res) => {
 
 export const getListTipoDocumentos = async (req, res) => {
   try {
-    let { activo, sortBy = "id", order = "ASC" } = req.query;
-    if (activo !== undefined) {
-      if (activo === "true") activo = true;
-      else if (activo === "false") activo = false;
-      else activo = undefined;
+    let { estado, sortBy = "id", order = "ASC" } = req.query;
+    if (estado !== undefined) {
+      if (estado === "true") estado = true;
+      else if (estado === "false") estado = false;
+      else estado = undefined;
     }
 
-    const { data, count } = await getListTipoDocumentosService(activo, sortBy, order);
+    const { data, count } = await getListTipoDocumentosService(estado, sortBy, order);
 
     return successResponse(
       res,
-      formatJsonApiData(data, ["id", "codigo", "nombre", "activo"]),
+      formatJsonApiData(data, ["id", "codigo", "nombre", "estado"]),
       200,
       { count }
     );
@@ -88,7 +88,7 @@ export const storeTipoDocumento = async (req, res) => {
         id: tipoDocumento.id,
         codigo: tipoDocumento.codigo,
         nombre: tipoDocumento.nombre,
-        activo: tipoDocumento.activo,
+        estado: tipoDocumento.estado,
       }
     });
   } catch (error) {
@@ -137,7 +137,7 @@ export const showTipoDocumento = async (req, res) => {
         id: tipoDocumento.id,
         codigo: tipoDocumento.codigo,
         nombre: tipoDocumento.nombre,
-        activo: tipoDocumento.activo,
+        estado: tipoDocumento.estado,
       },
       200
     );
@@ -178,7 +178,7 @@ export const updateTipoDocumento = async (req, res) => {
         id: tipoDocumento.id,
         codigo: tipoDocumento.codigo,
         nombre: tipoDocumento.nombre,
-        activo: tipoDocumento.activo,
+        estado: tipoDocumento.estado,
       }
     });
   } catch (error) {
@@ -228,7 +228,7 @@ export const changeTipoDocumentoStatus = async (req, res) => {
   }
 
   try {
-    const tipoDocumento = await changeTipoDocumentoStatusService(req.params.id, req.body.activo);
+    const tipoDocumento = await changeTipoDocumentoStatusService(req.params.id, req.body.estado);
 
     return successResponse(
       res,
@@ -236,7 +236,7 @@ export const changeTipoDocumentoStatus = async (req, res) => {
         id: tipoDocumento.id,
         codigo: tipoDocumento.codigo,
         nombre: tipoDocumento.nombre,
-        activo: tipoDocumento.activo,
+        estado: tipoDocumento.estado,
       },
       200
     );

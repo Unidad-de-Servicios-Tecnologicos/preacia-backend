@@ -62,7 +62,7 @@ export const getRegionalesRepository = async ({
 /**
  * Repositorio para la lista de regionales.
  */
-export const getListRegionalesRepository = async (activo, sortBy = "nombre", order = "ASC") => {
+export const getListRegionalesRepository = async (estado, sortBy = "nombre", order = "ASC") => {
   const whereClause = {};
 
   if (estado !== undefined) {

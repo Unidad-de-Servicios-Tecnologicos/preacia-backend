@@ -83,12 +83,16 @@ export const getUsersRepository = async ({
     const orderBy = allowedSort.includes(sortBy) ? sortBy : "id";
     const orderDirection = order.toUpperCase() === "DESC" ? "DESC" : "ASC";
 
-    // Si se recibe centro_id o centro_filtro, el filtro por centro es obligatorio
+    // Include para relación N:M con roles
     let include = [
         {
             model: Rol,
-            as: 'rol',
+            as: 'roles',
             attributes: ['id', 'nombre'],
+            through: { 
+                attributes: ['estado'],
+                where: { estado: true }
+            },
             where: rol_nombre
                 ? { nombre: { [Op.like]: `%${rol_nombre}%` } }
                 : undefined
@@ -116,13 +120,20 @@ export const findUsuarioById = async (id) => {
         include: [
             {
                 model: Rol,
-                as: 'rol',
-                attributes: ['id', 'nombre']
+                as: 'roles',
+                attributes: ['id', 'nombre'],
+                through: { 
+                    attributes: ['estado'],
+                    where: { estado: true }
+                }
             },
             {
                 association: 'centros',
                 attributes: ['id', 'nombre', 'codigo'],
-                through: { attributes: [] }
+                through: { 
+                    attributes: ['estado'],
+                    where: { estado: true }
+                }
             }
         ]
     });
@@ -149,17 +160,23 @@ export const findPermisosByUsuarioId = async (usuarioId) => {
             {
                 model: Permiso,
                 as: 'permisos', // Permisos directos del usuario
-                attributes: ['id', 'nombre', 'descripcion']
+                attributes: ['id', 'nombre', 'descripcion'],
+                through: { attributes: [] }
             },
             {
                 model: Rol,
-                as: 'rol',
+                as: 'roles', // Múltiples roles
                 attributes: ['id', 'nombre'],
+                through: { 
+                    attributes: [],
+                    where: { estado: true }
+                },
                 include: [
                     {
                         model: Permiso,
-                        as: 'permisos', // Permisos asociados al rol
-                        attributes: ['id', 'nombre', 'descripcion']
+                        as: 'permisos', // Permisos asociados a cada rol
+                        attributes: ['id', 'nombre', 'descripcion'],
+                        through: { attributes: [] }
                     }
                 ]
             }
@@ -168,19 +185,24 @@ export const findPermisosByUsuarioId = async (usuarioId) => {
 
     // Permisos directos del usuario
     const permisosUsuario = usuario?.permisos || [];
-    // Permisos del rol del usuario
-    const permisosRol = usuario?.rol?.permisos || [];
+    
+    // Permisos de todos los roles del usuario
+    const permisosRoles = [];
+    if (usuario?.roles) {
+        usuario.roles.forEach(rol => {
+            if (rol.permisos) {
+                permisosRoles.push(...rol.permisos);
+            }
+        });
+    }
 
     // Unifica y elimina duplicados por id
-    const permisosTotales = [
-        ...permisosUsuario,
-        ...permisosRol
-    ].filter(
-        (permiso, index, self) =>
-            index === self.findIndex(p => p.id === permiso.id)
-    );
+    const permisosMap = new Map();
+    [...permisosUsuario, ...permisosRoles].forEach(permiso => {
+        permisosMap.set(permiso.id, permiso);
+    });
 
-    return permisosTotales;
+    return Array.from(permisosMap.values());
 };
 
 /**
@@ -199,13 +221,17 @@ export const updateUsuario = async (usuarioId, updateData) => {
     // Actualizar solo los campos que se proporcionaron
     const updatedUser = await usuario.update(updateData);
 
-    // Retornar el usuario actualizado con el rol incluido
+    // Retornar el usuario actualizado con los roles incluidos
     return await Usuario.findByPk(usuarioId, {
         include: [
             {
                 model: Rol,
-                as: 'rol',
-                attributes: ['id', 'nombre']
+                as: 'roles',
+                attributes: ['id', 'nombre'],
+                through: { 
+                    attributes: ['estado'],
+                    where: { estado: true }
+                }
             }
         ]
     });

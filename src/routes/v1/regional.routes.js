@@ -14,42 +14,18 @@ import { PermisoEnum } from '../../enums/permiso.enum.js';
   
 const router = express.Router();
 
-// Ruta para obtener todas las regionales (todos los roles administrativos pueden ver)
+// Ruta para obtener todas las regionales (PÚBLICA)
 router.get('/',
-  [
-    verificarToken,
-    verificarCuentaActiva,
-    verificarRolOPermiso(
-      [RolEnum.ADMIN, RolEnum.DIRECTOR_REGIONAL, RolEnum.ADMINISTRADOR_CENTRO, RolEnum.REVISOR],
-      [PermisoEnum.VER_REGIONALES_TODAS, PermisoEnum.VER_REGIONALES_PROPIA]
-    ),
-  ],
   regionalController.getRegionales
 );
 
-// Ruta para obtener lista simplificada de regionales
+// Ruta para obtener lista simplificada de regionales (PÚBLICA)
 router.get('/list',
-  [
-    verificarToken,
-    verificarCuentaActiva,
-    verificarRolOPermiso(
-      [RolEnum.ADMIN, RolEnum.DIRECTOR_REGIONAL, RolEnum.ADMINISTRADOR_CENTRO, RolEnum.REVISOR],
-      [PermisoEnum.VER_REGIONALES_TODAS, PermisoEnum.VER_REGIONALES_PROPIA]
-    ),
-  ],
   regionalController.getListRegionales
 );
 
-// Ruta para obtener centros de una regional específica
+// Ruta para obtener centros de una regional específica (PÚBLICA)
 router.get('/:id/centros',
-  [
-    verificarToken,
-    verificarCuentaActiva,
-    verificarRolOPermiso(
-      [RolEnum.ADMIN, RolEnum.DIRECTOR_REGIONAL, RolEnum.ADMINISTRADOR_CENTRO, RolEnum.REVISOR],
-      [PermisoEnum.VER_CENTROS_TODOS, PermisoEnum.VER_CENTROS_REGIONAL, PermisoEnum.VER_CENTROS_PROPIOS]
-    ),
-  ],
   idParamValidator,
   regionalCentroController.getCentrosByRegional
 );
@@ -87,16 +63,8 @@ router.patch('/:id/estado',
   regionalController.changeRegionalStatus
 );
 
-// Ruta para obtener una regional por id
+// Ruta para obtener una regional por id (PÚBLICA)
 router.get('/:id',
-  [
-    verificarToken,
-    verificarCuentaActiva,
-    verificarRolOPermiso(
-      [RolEnum.ADMIN, RolEnum.DIRECTOR_REGIONAL, RolEnum.ADMINISTRADOR_CENTRO, RolEnum.REVISOR],
-      [PermisoEnum.VER_REGIONALES_TODAS, PermisoEnum.VER_REGIONALES_PROPIA]
-    )
-  ],
   idParamValidator,
   regionalController.showRegional
 );

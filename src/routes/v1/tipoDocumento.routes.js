@@ -8,28 +8,13 @@ import { PermisoEnum } from '../../enums/permiso.enum.js';
   
 const router = express.Router();
 
-// Ruta para obtener todos los tipos de documentos
+// Ruta para obtener todos los tipos de documentos (PÚBLICA)
 router.get('/',
-  [
-    verificarToken,
-    verificarCuentaActiva,
-    verificarRolOPermiso(
-      [RolEnum.ADMIN, RolEnum.DIRECTOR_REGIONAL, RolEnum.ADMINISTRADOR_CENTRO, RolEnum.REVISOR],
-      [PermisoEnum.GESTIONAR_TIPO_DOCUMENTOS]
-    ),
-  ],
   tipoDocumentoController.getTipoDocumentos
 );
 
+// Ruta para obtener lista simplificada de tipos de documentos (PÚBLICA)
 router.get('/list',
-  [
-    verificarToken,
-    verificarCuentaActiva,
-    verificarRolOPermiso(
-      [RolEnum.ADMIN, RolEnum.DIRECTOR_REGIONAL, RolEnum.ADMINISTRADOR_CENTRO, RolEnum.REVISOR],
-      [PermisoEnum.GESTIONAR_TIPO_DOCUMENTOS]
-    ),
-  ],
   tipoDocumentoController.getListTipoDocumentos
 );
 
@@ -66,16 +51,8 @@ router.patch('/:id/estado',
   tipoDocumentoController.changeTipoDocumentoStatus
 );
 
-// Ruta para obtener un tipo de documento por id
+// Ruta para obtener un tipo de documento por id (PÚBLICA)
 router.get('/:id',
-  [
-    verificarToken,
-    verificarCuentaActiva,
-    verificarRolOPermiso(
-      [RolEnum.ADMIN, RolEnum.DIRECTOR_REGIONAL, RolEnum.ADMINISTRADOR_CENTRO, RolEnum.REVISOR],
-      [PermisoEnum.GESTIONAR_TIPO_DOCUMENTOS]
-    )
-  ],
   idParamValidator,
   tipoDocumentoController.showTipoDocumento
 );

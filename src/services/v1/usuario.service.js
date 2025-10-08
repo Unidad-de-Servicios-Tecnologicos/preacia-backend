@@ -59,11 +59,10 @@ export const getUsuariosService = async (req) => {
     const formattedData = data.map(usuario => ({
         id: usuario.id,
         tipo_documento_id: usuario.tipo_documento_id,
-        rol_id: usuario.rol_id,
-        rol: usuario.rol ? {
-            id: usuario.rol.id,
-            nombre: usuario.rol.nombre
-        } : null,
+        roles: usuario.roles ? usuario.roles.map(rol => ({
+            id: rol.id,
+            nombre: rol.nombre
+        })) : [],
         documento: usuario.documento,
         nombres: usuario.nombres,
         apellidos: usuario.apellidos,
@@ -72,6 +71,7 @@ export const getUsuariosService = async (req) => {
         direccion: usuario.direccion,
         estado: usuario.estado,
         ultimo_acceso: usuario.ultimo_acceso,
+        acia_id: usuario.acia_id,
         verificado_acia: usuario.verificado_acia,
         created_at: usuario.created_at,
         updated_at: usuario.updated_at
@@ -129,7 +129,7 @@ export const getListUsuariosService = async (req) => {
         nombres: usuario.nombres,
         apellidos: usuario.apellidos,
         correo: usuario.correo,
-        rol: usuario.rol ? usuario.rol.nombre : null,
+        roles: usuario.roles ? usuario.roles.map(r => r.nombre) : [],
         estado: usuario.estado
     }));
 
@@ -154,21 +154,26 @@ export const storeUsuarioService = async (data) => {
         throw new Error("El tipo de documento especificado no existe o está inactivo");
     }
 
-    // Buscar el rol (por defecto APRENDIZ si no se especifica)
-    let rol;
-    if (data.rol_nombre) {
-        rol = await Rol.findOne({
-            where: { nombre: data.rol_nombre, estado: true }
-        });
+    // Procesar roles (puede ser un string o un array)
+    let rolesNombres = [];
+    if (data.roles_nombres && Array.isArray(data.roles_nombres) && data.roles_nombres.length > 0) {
+        rolesNombres = data.roles_nombres;
+    } else if (data.rol_nombre) {
+        rolesNombres = [data.rol_nombre];
     } else {
-        // Buscar rol por defecto (APRENDIZ)
-        rol = await Rol.findOne({
-            where: { nombre: RolEnum.APRENDIZ, estado: true }
-        });
+        rolesNombres = ['revisor']; // Rol por defecto
     }
 
-    if (!rol) {
-        throw new Error("El rol especificado no existe o está inactivo");
+    // Buscar todos los roles
+    const roles = await Rol.findAll({
+        where: { 
+            nombre: rolesNombres,
+            estado: true 
+        }
+    });
+
+    if (roles.length === 0) {
+        throw new Error("No se encontraron roles válidos");
     }
 
     // Encriptar contraseña
@@ -176,7 +181,6 @@ export const storeUsuarioService = async (data) => {
 
     // Crear usuario
     const nuevoUsuario = await Usuario.create({
-        rol_id: rol.id,
         tipo_documento_id: tipoDocumento.id,
         documento: data.documento,
         nombres: data.nombres,
@@ -186,8 +190,12 @@ export const storeUsuarioService = async (data) => {
         direccion: data.direccion || null,
         contrasena: hashedPassword,
         estado: true,
-        verificado_acia: false
+        acia_id: data.acia_id || null,
+        verificado_acia: data.verificado_acia || false
     });
+
+    // Asignar roles al usuario
+    await nuevoUsuario.setRoles(roles);
 
     // Obtener el usuario creado con relaciones
     const usuarioCreado = await findUsuarioById(nuevoUsuario.id);
@@ -195,11 +203,10 @@ export const storeUsuarioService = async (data) => {
     return {
         id: usuarioCreado.id,
         tipo_documento_id: usuarioCreado.tipo_documento_id,
-        rol_id: usuarioCreado.rol_id,
-        rol: usuarioCreado.rol ? {
-            id: usuarioCreado.rol.id,
-            nombre: usuarioCreado.rol.nombre
-        } : null,
+        roles: usuarioCreado.roles ? usuarioCreado.roles.map(rol => ({
+            id: rol.id,
+            nombre: rol.nombre
+        })) : [],
         documento: usuarioCreado.documento,
         nombres: usuarioCreado.nombres,
         apellidos: usuarioCreado.apellidos,
@@ -207,6 +214,7 @@ export const storeUsuarioService = async (data) => {
         telefono: usuarioCreado.telefono,
         direccion: usuarioCreado.direccion,
         estado: usuarioCreado.estado,
+        acia_id: usuarioCreado.acia_id,
         verificado_acia: usuarioCreado.verificado_acia,
         created_at: usuarioCreado.created_at
     };
@@ -225,11 +233,10 @@ export const showUsuarioService = async (id) => {
     return {
         id: usuario.id,
         tipo_documento_id: usuario.tipo_documento_id,
-        rol_id: usuario.rol_id,
-        rol: usuario.rol ? {
-            id: usuario.rol.id,
-            nombre: usuario.rol.nombre
-        } : null,
+        roles: usuario.roles ? usuario.roles.map(rol => ({
+            id: rol.id,
+            nombre: rol.nombre
+        })) : [],
         documento: usuario.documento,
         nombres: usuario.nombres,
         apellidos: usuario.apellidos,
@@ -238,6 +245,7 @@ export const showUsuarioService = async (id) => {
         direccion: usuario.direccion,
         estado: usuario.estado,
         ultimo_acceso: usuario.ultimo_acceso,
+        acia_id: usuario.acia_id,
         verificado_acia: usuario.verificado_acia,
         centros: usuario.centros || [],
         created_at: usuario.created_at,
@@ -275,15 +283,25 @@ export const updateUsuarioService = async (id, data) => {
         updateData.correo = data.correo;
     }
 
-    // Si se especifica un rol, validar y actualizar
-    if (data.rol_nombre) {
+    // Si se especifican roles, validar y actualizar
+    if (data.roles_nombres && Array.isArray(data.roles_nombres) && data.roles_nombres.length > 0) {
+        const roles = await Rol.findAll({
+            where: { 
+                nombre: data.roles_nombres,
+                estado: true 
+            }
+        });
+        if (roles.length === 0) {
+            throw new Error("No se encontraron roles válidos");
+        }
+        // Los roles se asignarán después de actualizar
+    } else if (data.rol_nombre) {
         const rol = await Rol.findOne({
             where: { nombre: data.rol_nombre, estado: true }
         });
-        if (!rol) {
-            throw new Error("El rol especificado no existe o está inactivo");
+        if (rol) {
+            // El rol se asignará después de actualizar
         }
-        updateData.rol_id = rol.id;
     }
 
     // Si se especifica tipo de documento, validar y actualizar
@@ -303,17 +321,40 @@ export const updateUsuarioService = async (id, data) => {
     if (data.telefono !== undefined) updateData.telefono = data.telefono;
     if (data.direccion !== undefined) updateData.direccion = data.direccion;
 
-    // Actualizar usuario
-    const usuarioActualizado = await updateUsuario(id, updateData);
+    // Actualizar campos básicos
+    let usuarioActualizado = await updateUsuario(id, updateData);
+
+    // Actualizar roles si se especificaron
+    if (data.roles_nombres && Array.isArray(data.roles_nombres) && data.roles_nombres.length > 0) {
+        const roles = await Rol.findAll({
+            where: { 
+                nombre: data.roles_nombres,
+                estado: true 
+            }
+        });
+        if (roles.length > 0) {
+            const usuario = await Usuario.findByPk(id);
+            await usuario.setRoles(roles);
+            usuarioActualizado = await findUsuarioById(id);
+        }
+    } else if (data.rol_nombre) {
+        const rol = await Rol.findOne({
+            where: { nombre: data.rol_nombre, estado: true }
+        });
+        if (rol) {
+            const usuario = await Usuario.findByPk(id);
+            await usuario.setRoles([rol]);
+            usuarioActualizado = await findUsuarioById(id);
+        }
+    }
 
     return {
         id: usuarioActualizado.id,
         tipo_documento_id: usuarioActualizado.tipo_documento_id,
-        rol_id: usuarioActualizado.rol_id,
-        rol: usuarioActualizado.rol ? {
-            id: usuarioActualizado.rol.id,
-            nombre: usuarioActualizado.rol.nombre
-        } : null,
+        roles: usuarioActualizado.roles ? usuarioActualizado.roles.map(rol => ({
+            id: rol.id,
+            nombre: rol.nombre
+        })) : [],
         documento: usuarioActualizado.documento,
         nombres: usuarioActualizado.nombres,
         apellidos: usuarioActualizado.apellidos,
@@ -321,6 +362,7 @@ export const updateUsuarioService = async (id, data) => {
         telefono: usuarioActualizado.telefono,
         direccion: usuarioActualizado.direccion,
         estado: usuarioActualizado.estado,
+        acia_id: usuarioActualizado.acia_id,
         verificado_acia: usuarioActualizado.verificado_acia,
         updated_at: usuarioActualizado.updated_at
     };

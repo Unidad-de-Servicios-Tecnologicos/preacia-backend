@@ -43,19 +43,19 @@ export const getCentros = async (req, res) => {
  */
 export const getListCentros = async (req, res) => {
   try {
-    let { regional_id, activo, sortBy = "nombre", order = "ASC" } = req.query;
-    
-    if (activo !== undefined) {
-      if (activo === "true") activo = true;
-      else if (activo === "false") activo = false;
-      else activo = undefined;
+    let { regional_id, estado, sortBy = "nombre", order = "ASC" } = req.query;
+
+    if (estado !== undefined) {
+      if (estado === "true") estado = true;
+      else if (estado === "false") estado = false;
+      else estado = undefined;
     }
 
-    const { data, count } = await getListCentrosService(regional_id, activo, sortBy, order);
+    const { data, count } = await getListCentrosService(regional_id, estado, sortBy, order);
 
     return successResponse(
       res,
-      formatJsonApiData(data, ["id", "codigo", "nombre", "regional_id", "activo", "regional"]),
+      formatJsonApiData(data, ["id", "codigo", "nombre", "regional_id", "estado", "regional"]),
       200,
       { count }
     );
@@ -96,7 +96,7 @@ export const storeCentro = async (req, res) => {
         nombre: centro.nombre,
         direccion: centro.direccion,
         telefono: centro.telefono,
-        activo: centro.activo,
+        estado: centro.estado,
       }
     });
   } catch (error) {
@@ -167,7 +167,7 @@ export const showCentro = async (req, res) => {
         nombre: centro.nombre,
         direccion: centro.direccion,
         telefono: centro.telefono,
-        activo: centro.activo,
+        estado: centro.estado,
         created_at: centro.created_at,
         updated_at: centro.updated_at,
         regional: centro.regional ? {
@@ -221,7 +221,7 @@ export const updateCentro = async (req, res) => {
         nombre: centro.nombre,
         direccion: centro.direccion,
         telefono: centro.telefono,
-        activo: centro.activo,
+        estado: centro.estado,
         regional: centro.regional ? {
           id: centro.regional.id,
           codigo: centro.regional.codigo,
@@ -292,7 +292,7 @@ export const changeCentroStatus = async (req, res) => {
   }
 
   try {
-    const centro = await changeCentroStatusService(req.params.id, req.body.activo);
+    const centro = await changeCentroStatusService(req.params.id, req.body.estado);
 
     return successResponse(
       res,
@@ -300,7 +300,7 @@ export const changeCentroStatus = async (req, res) => {
         id: centro.id,
         codigo: centro.codigo,
         nombre: centro.nombre,
-        activo: centro.activo,
+        estado: centro.estado,
       },
       200
     );

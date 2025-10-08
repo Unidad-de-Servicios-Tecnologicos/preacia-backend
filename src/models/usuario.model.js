@@ -92,7 +92,6 @@ const Usuario = sequelize.define(
             defaultValue: false,
             comment: 'Si fue verificado en sistema ACIA',
         },
-        // NUEVAS PROPIEDADES PARA RESET PASSWORD
         reset_token: {
             type: DataTypes.STRING,
             allowNull: true,

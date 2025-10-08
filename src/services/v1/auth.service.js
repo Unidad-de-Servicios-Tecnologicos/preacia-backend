@@ -66,24 +66,27 @@ export const registerUserService = async (data) => {
         tipo_documento_id: tipoDocumentoId
     };
 
-    // Crea el usuario
-    const usuario = await createUser(userData, hashedPassword, rolUsuario.id);
+    // Crea el usuario con el rol asignado
+    const usuario = await createUser(userData, hashedPassword, [rolUsuario.id]);
+
+    // Obtener usuario con roles cargados
+    const usuarioCreado = await findUsuarioById(usuario.id);
 
     return {
         message: 'Usuario registrado correctamente. Debe esperar la verificación de su cuenta por parte de un administrador del sistema.',
         usuario: {
-            id: usuario.id,
-            documento: usuario.documento,
-            nombres: usuario.nombres,
-            apellidos: usuario.apellidos,
-            correo: usuario.correo,
-            telefono: usuario.telefono,
-            direccion: usuario.direccion,
-            estado: usuario.estado,
-            rol: {
-                id: usuario.rol_id,
-                nombre: rolUsuario.nombre
-            }
+            id: usuarioCreado.id,
+            documento: usuarioCreado.documento,
+            nombres: usuarioCreado.nombres,
+            apellidos: usuarioCreado.apellidos,
+            correo: usuarioCreado.correo,
+            telefono: usuarioCreado.telefono,
+            direccion: usuarioCreado.direccion,
+            estado: usuarioCreado.estado,
+            roles: usuarioCreado.roles ? usuarioCreado.roles.map(r => ({
+                id: r.id,
+                nombre: r.nombre
+            })) : []
         }
     };
 };
@@ -107,33 +110,38 @@ export const loginUserService = async ({ login, contrasena }) => {
         return { success: false, message: 'Contraseña incorrecta.', status: 401 };
     }
 
-    const rol_nombre = user.rol ? user.rol.nombre : null;
+    // Obtener nombres de todos los roles
+    const roles_nombres = user.roles ? user.roles.map(r => r.nombre) : [];
     const tipo_documento_nombre = user.tipo_documento ? user.tipo_documento.nombre : null;
 
-    // Combinar permisos del usuario y del rol
-    const permisosUsuario = user.permisos || [];
-    const permisosRol = user.rol && user.rol.permisos ? user.rol.permisos : [];
-
-    // Crear un mapa para evitar duplicados
+    // Combinar permisos del usuario y de todos los roles
     const permisosMap = new Map();
 
     // Agregar permisos directos del usuario
-    permisosUsuario.forEach(permiso => {
-        permisosMap.set(permiso.id, {
-            id: permiso.id,
-            nombre: permiso.nombre,
-            descripcion: permiso.descripcion
+    if (user.permisos) {
+        user.permisos.forEach(permiso => {
+            permisosMap.set(permiso.id, {
+                id: permiso.id,
+                nombre: permiso.nombre,
+                descripcion: permiso.descripcion
+            });
         });
-    });
+    }
 
-    // Agregar permisos del rol
-    permisosRol.forEach(permiso => {
-        permisosMap.set(permiso.id, {
-            id: permiso.id,
-            nombre: permiso.nombre,
-            descripcion: permiso.descripcion
+    // Agregar permisos de todos los roles
+    if (user.roles) {
+        user.roles.forEach(rol => {
+            if (rol.permisos) {
+                rol.permisos.forEach(permiso => {
+                    permisosMap.set(permiso.id, {
+                        id: permiso.id,
+                        nombre: permiso.nombre,
+                        descripcion: permiso.descripcion
+                    });
+                });
+            }
         });
-    });
+    }
 
     // Convertir el mapa a array
     const permisosCombinados = Array.from(permisosMap.values());
@@ -142,8 +150,7 @@ export const loginUserService = async ({ login, contrasena }) => {
     const accessToken = generateAccessToken({
         id: user.id,
         correo: user.correo,
-        rol_id: user.rol_id,
-        rol_nombre,
+        roles: roles_nombres, // Array de nombres de roles
         estado: user.estado
     });
 
@@ -158,10 +165,12 @@ export const loginUserService = async ({ login, contrasena }) => {
             telefono: user.telefono,
             direccion: user.direccion,
             estado: user.estado,
-            rol: {
-                id: user.rol_id,
-                nombre: rol_nombre
-            },
+            acia_id: user.acia_id,
+            verificado_acia: user.verificado_acia,
+            roles: user.roles ? user.roles.map(r => ({
+                id: r.id,
+                nombre: r.nombre
+            })) : [],
             permisos: permisosCombinados
         },
         token: accessToken,
@@ -185,8 +194,7 @@ export const forgotPasswordService = async ({ correo }) => {
         const resetToken = generateAccessToken({
             id: usuario.id,
             correo: usuario.correo,
-            rol_id: usuario.rol_id,
-            rol_nombre: usuario.rol ? usuario.rol.nombre : null,
+            roles: usuario.roles ? usuario.roles.map(r => r.nombre) : [],
             estado: usuario.estado
         });
 
@@ -266,8 +274,7 @@ export const refreshTokenService = async (refreshToken) => {
         const accessToken = generateAccessToken({
             id: usuario.id,
             correo: usuario.correo,
-            rol_id: usuario.rol_id,
-            rol_nombre: usuario.rol ? usuario.rol.nombre : null,
+            roles: usuario.roles ? usuario.roles.map(r => r.nombre) : [],
             estado: usuario.estado
         });
 
@@ -333,7 +340,7 @@ export const createUserWithEmailSetupService = async (data) => {
     };
 
     // Crea el usuario con la contraseña ya establecida
-    const usuario = await createUser(userData, hashedPassword, rolUsuario.id);
+    const usuario = await createUser(userData, hashedPassword, [rolUsuario.id]);
 
     // Envía el correo con la contraseña generada
     await sendPasswordCredentialsEmail(usuario, defaultPassword);

@@ -42,30 +42,10 @@ router.get('/:id',
     PermisoController.showPermission
 );
 
-
-router.put('/:id',
-    [
-        verificarToken,
-        verificarCuentaActiva,
-        verificarRolOPermiso([
-            RolEnum.ADMIN
-        ], [PermisoEnum.GESTIONAR_PERMISOS])
-    ],
-    [...idParamValidator],
-    
-);
-
-// SOLO el endpoint /estado - eliminamos /status
-router.patch('/:id/estado',
-    [
-        verificarToken,
-        verificarCuentaActiva,
-        verificarRolOPermiso([
-            RolEnum.ADMIN
-        ], [PermisoEnum.GESTIONAR_PERMISOS])
-    ],
-    [...idParamValidator],
-    
-);
+// =============================================================================
+// NOTA: Los permisos son SOLO LECTURA
+// No se permite crear, editar o eliminar permisos desde la API
+// Los permisos se gestionan mediante el archivo src/database/data.sql
+// =============================================================================
 
 export default router;

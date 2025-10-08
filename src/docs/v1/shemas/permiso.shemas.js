@@ -1,6 +1,7 @@
 export const permisosSchemas = {
     Permiso: {
         type: 'object',
+        description: 'NOTA: Los permisos son SOLO LECTURA. Se gestionan mediante src/database/data.sql',
         properties: {
             id: {
                 type: 'integer',
@@ -11,13 +12,13 @@ export const permisosSchemas = {
                 type: 'string',
                 maxLength: 100,
                 description: 'Nombre único del permiso',
-                example: 'ver_usuarios'
+                example: 'ver_usuarios_centro'
             },
             descripcion: {
                 type: 'string',
                 maxLength: 500,
                 description: 'Descripción detallada del permiso',
-                example: 'Permite ver la lista de usuarios del sistema',
+                example: 'Permite ver usuarios del centro',
                 nullable: true
             },
             estado: {
@@ -30,72 +31,17 @@ export const permisosSchemas = {
                 type: 'string',
                 format: 'date-time',
                 description: 'Fecha de creación del registro',
-                example: '2024-01-15T10:30:00.000Z'
+                example: '2025-10-08T10:30:00.000Z'
             },
             updated_at: {
                 type: 'string',
                 format: 'date-time',
                 description: 'Fecha de última actualización del registro',
-                example: '2024-01-15T10:30:00.000Z',
+                example: '2025-10-08T10:30:00.000Z',
                 nullable: true
             }
         },
         required: ['nombre']
-    },
-
-    PermisoInput: {
-        type: 'object',
-        properties: {
-            nombre: {
-                type: 'string',
-                maxLength: 100,
-                description: 'Nombre único del permiso',
-                example: 'crear_usuarios'
-            },
-            descripcion: {
-                type: 'string',
-                maxLength: 500,
-                description: 'Descripción detallada del permiso',
-                example: 'Permite crear nuevos usuarios en el sistema'
-            },
-            estado: {
-                type: 'boolean',
-                description: 'Estado inicial del permiso',
-                example: true,
-                default: true
-            }
-        },
-        required: ['nombre']
-    },
-
-    PermisoUpdate: {
-        type: 'object',
-        properties: {
-            nombre: {
-                type: 'string',
-                maxLength: 100,
-                description: 'Nombre del permiso',
-                example: 'editar_usuarios_actualizado'
-            },
-            descripcion: {
-                type: 'string',
-                maxLength: 500,
-                description: 'Descripción actualizada del permiso',
-                example: 'Permite editar usuarios existentes con nuevas funcionalidades'
-            }
-        }
-    },
-
-    PermisoEstado: {
-        type: 'object',
-        properties: {
-            estado: {
-                type: 'boolean',
-                description: 'Nuevo estado del permiso',
-                example: false
-            }
-        },
-        required: ['estado']
     },
 
     PermisosPaginados: {

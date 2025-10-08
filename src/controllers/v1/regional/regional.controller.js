@@ -43,18 +43,18 @@ export const getRegionales = async (req, res) => {
  */
 export const getListRegionales = async (req, res) => {
   try {
-    let { activo, sortBy = "nombre", order = "ASC" } = req.query;
-    if (activo !== undefined) {
-      if (activo === "true") activo = true;
-      else if (activo === "false") activo = false;
-      else activo = undefined;
+    let { estado, sortBy = "nombre", order = "ASC" } = req.query;
+    if (estado !== undefined) {
+      if (estado === "true") estado = true;
+      else if (estado === "false") estado = false;
+      else estado = undefined;
     }
 
-    const { data, count } = await getListRegionalesService(activo, sortBy, order);
+    const { data, count } = await getListRegionalesService(estado, sortBy, order);
 
     return successResponse(
       res,
-      formatJsonApiData(data, ["id", "codigo", "nombre", "activo"]),
+      formatJsonApiData(data, ["id", "codigo", "nombre", "estado"]),
       200,
       { count }
     );
@@ -94,7 +94,7 @@ export const storeRegional = async (req, res) => {
         nombre: regional.nombre,
         direccion: regional.direccion,
         telefono: regional.telefono,
-        activo: regional.activo,
+        estado: regional.estado,
       }
     });
   } catch (error) {
@@ -148,7 +148,7 @@ export const showRegional = async (req, res) => {
         nombre: regional.nombre,
         direccion: regional.direccion,
         telefono: regional.telefono,
-        activo: regional.activo,
+        estado: regional.estado,
         created_at: regional.created_at,
         updated_at: regional.updated_at,
       },
@@ -196,7 +196,7 @@ export const updateRegional = async (req, res) => {
         nombre: regional.nombre,
         direccion: regional.direccion,
         telefono: regional.telefono,
-        activo: regional.activo,
+        estado: regional.estado,
       }
     });
   } catch (error) {
@@ -249,7 +249,7 @@ export const changeRegionalStatus = async (req, res) => {
   }
 
   try {
-    const regional = await changeRegionalStatusService(req.params.id, req.body.activo);
+    const regional = await changeRegionalStatusService(req.params.id, req.body.estado);
 
     return successResponse(
       res,
@@ -257,7 +257,7 @@ export const changeRegionalStatus = async (req, res) => {
         id: regional.id,
         codigo: regional.codigo,
         nombre: regional.nombre,
-        activo: regional.activo,
+        estado: regional.estado,
       },
       200
     );

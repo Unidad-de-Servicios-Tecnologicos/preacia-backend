@@ -203,12 +203,13 @@ export const updateRoleService = async (id, data) => {
   }
 
   // No permitir modificar el nombre de roles propios del sistema
+  const rolesProtegidos = [RolEnum.ADMIN, RolEnum.DIRECTOR_REGIONAL, RolEnum.ADMINISTRADOR_CENTRO, RolEnum.REVISOR];
   if (
-    (rol.nombre === RolEnum.ADMINISTRADOR || rol.nombre === RolEnum.EMPLEADO) &&
+    rolesProtegidos.includes(rol.nombre) &&
     data.nombre &&
     data.nombre.trim() !== rol.nombre
   ) {
-    const error = new Error(`El rol "${rol.nombre}" es propio del sistema y no puede ser modificado.`);
+    const error = new Error(`El rol "${rol.nombre}" es propio del sistema y no puede cambiar su nombre.`);
     error.code = "SYSTEM_ROLE_UPDATE_FORBIDDEN";
     throw error;
   }
@@ -236,21 +237,17 @@ export const deleteRoleService = async (id) => {
   }
 
   // No permitir eliminar roles propios del sistema
-  if (
-    rol.nombre === RolEnum.ADMINISTRADOR ||
-    rol.nombre === RolEnum.EMPLEADO
-  ) {
+  const rolesProtegidos = [RolEnum.ADMIN, RolEnum.DIRECTOR_REGIONAL, RolEnum.ADMINISTRADOR_CENTRO, RolEnum.REVISOR];
+  if (rolesProtegidos.includes(rol.nombre)) {
     const error = new Error(`El rol "${rol.nombre}" es propio del sistema y no puede ser eliminado.`);
     error.code = "SYSTEM_ROLE_DELETE_FORBIDDEN";
     throw error;
   }
 
-  // Verificar si el rol tiene usuarios asociados
+  // Verificar si el rol tiene usuarios asociados (ahora en tabla usuario_rol)
   const hasUsers = await checkRoleHasUsersRepository(id);
   if (hasUsers) {
-    // Obtener la cantidad de usuarios para el mensaje
-    const usersCount = await Usuario.count({ where: { rol_id: id } });
-    const error = new Error(`No se puede eliminar el rol porque tiene ${usersCount} usuario(s) asociado(s). Debe reasignar o eliminar los usuarios primero.`);
+    const error = new Error(`No se puede eliminar el rol porque tiene usuario(s) asociado(s). Debe reasignar los usuarios primero.`);
     error.code = "ROLE_HAS_USERS";
     throw error;
   }
@@ -267,10 +264,9 @@ export const changeRoleStatusService = async (id, newState) => {
   if (!rol) return "NOT_FOUND";
 
   // No permitir modificar el estado de roles propios del sistema
-  if (
-    (rol.nombre === RolEnum.ADMINISTRADOR || rol.nombre === RolEnum.EMPLEADO)
-  ) {
-    const error = new Error(`El rol "${rol.nombre}" es propio del sistema y no puede ser modificado.`);
+  const rolesProtegidos = [RolEnum.ADMIN, RolEnum.DIRECTOR_REGIONAL, RolEnum.ADMINISTRADOR_CENTRO, RolEnum.REVISOR];
+  if (rolesProtegidos.includes(rol.nombre)) {
+    const error = new Error(`El rol "${rol.nombre}" es propio del sistema y no puede ser desactivado.`);
     error.code = "SYSTEM_ROLE_UPDATE_FORBIDDEN";
     throw error;
   }
@@ -282,9 +278,7 @@ export const changeRoleStatusService = async (id, newState) => {
   if (!estadoFinal) {
     const hasUsers = await checkRoleHasUsersRepository(id);
     if (hasUsers) {
-      // Obtener la cantidad de usuarios para el mensaje
-      const usersCount = await Usuario.count({ where: { rol_id: id } });
-      const error = new Error(`No se puede desactivar el rol porque tiene ${usersCount} usuario(s) asociado(s). Debe reasignar los usuarios primero.`);
+      const error = new Error(`No se puede desactivar el rol porque tiene usuario(s) asociado(s). Debe reasignar los usuarios primero.`);
       error.code = "ROLE_HAS_USERS";
       throw error;
     }

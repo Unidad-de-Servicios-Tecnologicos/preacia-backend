@@ -13,29 +13,13 @@ import { PermisoEnum } from '../../enums/permiso.enum.js';
   
 const router = express.Router();
 
-// Ruta para obtener todos los centros (todos los roles administrativos pueden ver)
+// Ruta para obtener todos los centros (PÚBLICA)
 router.get('/',
-  [
-    verificarToken,
-    verificarCuentaActiva,
-    verificarRolOPermiso(
-      [RolEnum.ADMIN, RolEnum.DIRECTOR_REGIONAL, RolEnum.ADMINISTRADOR_CENTRO, RolEnum.REVISOR],
-      [PermisoEnum.VER_CENTROS_TODOS, PermisoEnum.VER_CENTROS_REGIONAL, PermisoEnum.VER_CENTROS_PROPIOS]
-    ),
-  ],
   centroController.getCentros
 );
 
-// Ruta para obtener lista simplificada de centros
+// Ruta para obtener lista simplificada de centros (PÚBLICA)
 router.get('/list',
-  [
-    verificarToken,
-    verificarCuentaActiva,
-    verificarRolOPermiso(
-      [RolEnum.ADMIN, RolEnum.DIRECTOR_REGIONAL, RolEnum.ADMINISTRADOR_CENTRO, RolEnum.REVISOR],
-      [PermisoEnum.VER_CENTROS_TODOS, PermisoEnum.VER_CENTROS_REGIONAL, PermisoEnum.VER_CENTROS_PROPIOS]
-    ),
-  ],
   centroController.getListCentros
 );
 
@@ -72,16 +56,8 @@ router.patch('/:id/estado',
   centroController.changeCentroStatus
 );
 
-// Ruta para obtener un centro por id
+// Ruta para obtener un centro por id (PÚBLICA)
 router.get('/:id',
-  [
-    verificarToken,
-    verificarCuentaActiva,
-    verificarRolOPermiso(
-      [RolEnum.ADMIN, RolEnum.DIRECTOR_REGIONAL, RolEnum.ADMINISTRADOR_CENTRO, RolEnum.REVISOR],
-      [PermisoEnum.VER_CENTROS_TODOS, PermisoEnum.VER_CENTROS_REGIONAL, PermisoEnum.VER_CENTROS_PROPIOS]
-    )
-  ],
   idParamValidator,
   centroController.showCentro
 );

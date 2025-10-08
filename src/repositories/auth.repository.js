@@ -5,8 +5,12 @@ import { Op } from 'sequelize';
 
 /**
  * Crea un usuario en la base de datos.
+ * @param {Object} data - Datos del usuario
+ * @param {String} hashedPassword - Contraseña hasheada
+ * @param {Array|Number} roleIds - Array de IDs de roles o un solo ID
+ * @param {Boolean} estado - Estado del usuario
  */
-export const createUser = async (data, hashedPassword, roleId, estado = false) => {
+export const createUser = async (data, hashedPassword, roleIds = [], estado = false) => {
     const {
         tipo_documento_id, 
         documento,
@@ -17,8 +21,7 @@ export const createUser = async (data, hashedPassword, roleId, estado = false) =
         direccion
     } = data;
 
-    return await Usuario.create({
-        rol_id: roleId,
+    const usuario = await Usuario.create({
         tipo_documento_id,
         documento,
         nombres,
@@ -29,6 +32,14 @@ export const createUser = async (data, hashedPassword, roleId, estado = false) =
         contrasena: hashedPassword,
         estado
     });
+
+    // Asignar roles al usuario
+    if (roleIds && roleIds.length > 0) {
+        const roles = Array.isArray(roleIds) ? roleIds : [roleIds];
+        await usuario.setRoles(roles);
+    }
+
+    return usuario;
 };
 
 /**
@@ -64,8 +75,12 @@ export const findUserForLogin = async (login) => {
         include: [
             {
                 model: Rol,
-                as: 'rol',
+                as: 'roles', // Múltiples roles
                 attributes: ['id', 'nombre'],
+                through: { 
+                    attributes: [],
+                    where: { estado: true }
+                },
                 include: [
                     {
                         model: Permiso,

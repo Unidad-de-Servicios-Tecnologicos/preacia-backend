@@ -75,7 +75,7 @@ export const getCentrosRepository = async ({
 /**
  * Repositorio para la lista de centros.
  */
-export const getListCentrosRepository = async (regional_id, activo, sortBy = "nombre", order = "ASC") => {
+export const getListCentrosRepository = async (regional_id, estado, sortBy = "nombre", order = "ASC") => {
   const whereClause = {};
 
   if (regional_id) {
@@ -236,9 +236,14 @@ export const findCentroByNombreAndRegionalExcludingIdRepository = async (nombre,
  * Verificar si un centro tiene usuarios asociados.
  */
 export const checkCentroHasUsuariosRepository = async (id) => {
-  // TODO: Implementar cuando se cree la tabla usuario_centro
-  // Por ahora retornamos false para permitir operaciones
-  return false;
+  const { default: UsuarioCentro } = await import('../models/index.js');
+  const count = await UsuarioCentro.count({
+    where: { 
+      centro_id: id,
+      estado: true 
+    }
+  });
+  return count > 0;
 };
 
 /**

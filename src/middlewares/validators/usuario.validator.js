@@ -27,6 +27,32 @@ export const cambiarEstadoUsuarioValidator = [
 ];
 
 export const registerUserValidator = [
+    body("roles_nombres")
+        .optional()
+        .custom(async (roles_nombres) => {
+            if (roles_nombres) {
+                // Validar que sea un array si se proporciona
+                if (!Array.isArray(roles_nombres)) {
+                    throw new Error("roles_nombres debe ser un array de nombres de roles.");
+                }
+                
+                // Validar que todos los roles existan
+                if (roles_nombres.length > 0) {
+                    const roles = await Rol.findAll({ 
+                        where: { 
+                            nombre: roles_nombres,
+                            estado: true 
+                        } 
+                    });
+                    
+                    if (roles.length !== roles_nombres.length) {
+                        throw new Error("Uno o más roles especificados no existen o están inactivos.");
+                    }
+                }
+            }
+            return true;
+        }),
+    
     body("rol_nombre")
         .optional()
         .trim()
@@ -113,6 +139,32 @@ export const registerUserValidator = [
 ];
 
 export const updateUserValidator = [
+    body("roles_nombres")
+        .optional()
+        .custom(async (roles_nombres) => {
+            if (roles_nombres) {
+                // Validar que sea un array si se proporciona
+                if (!Array.isArray(roles_nombres)) {
+                    throw new Error("roles_nombres debe ser un array de nombres de roles.");
+                }
+                
+                // Validar que todos los roles existan
+                if (roles_nombres.length > 0) {
+                    const roles = await Rol.findAll({ 
+                        where: { 
+                            nombre: roles_nombres,
+                            estado: true 
+                        } 
+                    });
+                    
+                    if (roles.length !== roles_nombres.length) {
+                        throw new Error("Uno o más roles especificados no existen o están inactivos.");
+                    }
+                }
+            }
+            return true;
+        }),
+    
     body("rol_nombre")
         .optional()
         .trim()
@@ -190,6 +242,32 @@ export const updateUserValidator = [
 ];
 
 export const createUserWithEmailValidator = [
+    body("roles_nombres")
+        .optional()
+        .custom(async (roles_nombres) => {
+            if (roles_nombres) {
+                // Validar que sea un array si se proporciona
+                if (!Array.isArray(roles_nombres)) {
+                    throw new Error("roles_nombres debe ser un array de nombres de roles.");
+                }
+                
+                // Validar que todos los roles existan
+                if (roles_nombres.length > 0) {
+                    const roles = await Rol.findAll({ 
+                        where: { 
+                            nombre: roles_nombres,
+                            estado: true 
+                        } 
+                    });
+                    
+                    if (roles.length !== roles_nombres.length) {
+                        throw new Error("Uno o más roles especificados no existen o están inactivos.");
+                    }
+                }
+            }
+            return true;
+        }),
+    
     body("rol_nombre")
         .optional()
         .trim()

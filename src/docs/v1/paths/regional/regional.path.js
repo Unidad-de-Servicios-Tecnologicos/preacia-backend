@@ -3,8 +3,7 @@ export const regionalPaths = {
         get: {
             tags: ['Regional'],
             summary: 'Obtener lista paginada de regionales',
-            description: 'Retorna una lista paginada de regionales con filtros opcionales',
-            security: [{ bearerAuth: [] }],
+            description: 'Retorna una lista paginada de regionales con filtros opcionales. **ENDPOINT PÚBLICO - No requiere autenticación**',
             parameters: [
                 {
                     name: 'page',
@@ -48,7 +47,7 @@ export const regionalPaths = {
                     }
                 },
                 {
-                    name: 'activo',
+                    name: 'estado',
                     in: 'query',
                     description: 'Filtrar por estado',
                     schema: {
@@ -210,11 +209,10 @@ export const regionalPaths = {
         get: {
             tags: ['Regional'],
             summary: 'Obtener lista simplificada de regionales',
-            description: 'Retorna una lista sin paginación de regionales para selects y dropdowns',
-            security: [{ bearerAuth: [] }],
+            description: 'Retorna una lista sin paginación de regionales para selects y dropdowns. **ENDPOINT PÚBLICO - No requiere autenticación**',
             parameters: [
                 {
-                    name: 'activo',
+                    name: 'estado',
                     in: 'query',
                     description: 'Filtrar por estado',
                     schema: {
@@ -263,7 +261,7 @@ export const regionalPaths = {
                                                 id: { type: 'integer' },
                                                 codigo: { type: 'string' },
                                                 nombre: { type: 'string' },
-                                                activo: { type: 'boolean' }
+                                                estado: { type: 'boolean' }
                                             }
                                         }
                                     },
@@ -277,16 +275,6 @@ export const regionalPaths = {
                                         }
                                     }
                                 }
-                            }
-                        }
-                    }
-                },
-                401: {
-                    description: 'No autorizado',
-                    content: {
-                        'application/json': {
-                            schema: {
-                                $ref: '#/components/schemas/ErrorResponse'
                             }
                         }
                     }
@@ -308,8 +296,7 @@ export const regionalPaths = {
         get: {
             tags: ['Regional'],
             summary: 'Obtener una regional por ID',
-            description: 'Retorna los detalles de una regional específica',
-            security: [{ bearerAuth: [] }],
+            description: 'Retorna los detalles de una regional específica. **ENDPOINT PÚBLICO - No requiere autenticación**',
             parameters: [
                 {
                     name: 'id',
@@ -501,7 +488,7 @@ export const regionalPaths = {
                                             id: { type: 'integer' },
                                             codigo: { type: 'string' },
                                             nombre: { type: 'string' },
-                                            activo: { type: 'boolean' }
+                                            estado: { type: 'boolean' }
                                         }
                                     }
                                 }
@@ -556,8 +543,7 @@ export const regionalPaths = {
         get: {
             tags: ['Regional'],
             summary: 'Obtener centros de formación de una regional',
-            description: 'Retorna una lista paginada de centros de formación asociados a una regional específica',
-            security: [{ bearerAuth: [] }],
+            description: 'Retorna una lista completa (sin paginación) de centros de formación asociados a una regional específica. **ENDPOINT PÚBLICO - No requiere autenticación**',
             parameters: [
                 {
                     name: 'id',
@@ -566,27 +552,6 @@ export const regionalPaths = {
                     description: 'ID de la regional',
                     schema: {
                         type: 'integer'
-                    }
-                },
-                {
-                    name: 'page',
-                    in: 'query',
-                    description: 'Número de página',
-                    schema: {
-                        type: 'integer',
-                        default: 1,
-                        minimum: 1
-                    }
-                },
-                {
-                    name: 'limit',
-                    in: 'query',
-                    description: 'Cantidad de registros por página',
-                    schema: {
-                        type: 'integer',
-                        default: 10,
-                        minimum: 1,
-                        maximum: 100
                     }
                 },
                 {
@@ -610,7 +575,7 @@ export const regionalPaths = {
                     }
                 },
                 {
-                    name: 'activo',
+                    name: 'estado',
                     in: 'query',
                     description: 'Filtrar por estado',
                     schema: {
@@ -640,63 +605,14 @@ export const regionalPaths = {
                                     meta: {
                                         type: 'object',
                                         properties: {
-                                            totalRegistros: {
+                                            count: {
                                                 type: 'integer',
-                                                example: 25
-                                            },
-                                            totalPaginas: {
-                                                type: 'integer',
-                                                example: 3
-                                            },
-                                            paginaActual: {
-                                                type: 'integer',
-                                                example: 1
-                                            },
-                                            registrosPorPagina: {
-                                                type: 'integer',
-                                                example: 10
-                                            },
-                                            regional: {
-                                                type: 'object',
-                                                properties: {
-                                                    id: { type: 'integer' },
-                                                    codigo: { type: 'string' },
-                                                    nombre: { type: 'string' }
-                                                }
+                                                description: 'Total de centros de la regional',
+                                                example: 5
                                             }
-                                        }
-                                    },
-                                    links: {
-                                        type: 'object',
-                                        properties: {
-                                            self: { type: 'string' },
-                                            first: { type: 'string' },
-                                            last: { type: 'string' },
-                                            prev: { type: 'string', nullable: true },
-                                            next: { type: 'string', nullable: true }
                                         }
                                     }
                                 }
-                            }
-                        }
-                    }
-                },
-                401: {
-                    description: 'No autorizado - Token inválido o ausente',
-                    content: {
-                        'application/json': {
-                            schema: {
-                                $ref: '#/components/schemas/ErrorResponse'
-                            }
-                        }
-                    }
-                },
-                403: {
-                    description: 'Prohibido - No tiene permisos para esta operación',
-                    content: {
-                        'application/json': {
-                            schema: {
-                                $ref: '#/components/schemas/ErrorResponse'
                             }
                         }
                     }

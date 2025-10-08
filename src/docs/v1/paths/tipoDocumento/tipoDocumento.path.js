@@ -3,16 +3,8 @@ export const tipoDocumentoPaths = {
         get: {
             tags: ['Tipo documentos'],
             summary: 'Obtener todos los tipos de documentos',
-            description: 'Devuelve una lista de todos los tipos de documentos disponibles en el sistema.',
-            security: [{ bearerAuth: [] }],
+            description: 'Devuelve una lista de todos los tipos de documentos disponibles en el sistema. **ENDPOINT PÚBLICO - No requiere autenticación**',
             parameters: [
-                {
-                    in: 'header',
-                    name: 'Authorization',
-                    required: true,
-                    schema: { type: 'string', example: 'Bearer <access_token>' },
-                    description: 'Token de acceso en formato Bearer'
-                },
                 {
                     in: 'query',
                     name: 'nombre',
@@ -159,16 +151,8 @@ export const tipoDocumentoPaths = {
         get: {
             tags: ['Tipo documentos'],
             summary: 'Obtener un tipo de documento por ID',
-            description: 'Devuelve un tipo de documento específico según su ID.',
-            security: [{ bearerAuth: [] }], 
+            description: 'Devuelve un tipo de documento específico según su ID. **ENDPOINT PÚBLICO - No requiere autenticación**',
             parameters: [
-                {
-                    in: 'header',
-                    name: 'Authorization',
-                    required: true,
-                    schema: { type: 'string', example: 'Bearer <access_token>' },
-                    description: 'Token de acceso en formato Bearer'
-                },
                 {
                     in: 'path',
                     name: 'id',
@@ -317,8 +301,7 @@ export const tipoDocumentoPaths = {
         get: {
             tags: ['Tipo documentos'],
             summary: 'Obtener lista simplificada de tipos de documentos',
-            description: 'Devuelve una lista simplificada de tipos de documentos activos.',
-            security: [{ bearerAuth: [] }],
+            description: 'Devuelve una lista simplificada de tipos de documentos activos. **ENDPOINT PÚBLICO - No requiere autenticación**',
             responses: {
                 200: {
                     description: 'Lista simplificada de tipos de documentos obtenida exitosamente',
