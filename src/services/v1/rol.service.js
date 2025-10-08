@@ -1,6 +1,5 @@
 import { buildPagination } from "../../utils/buildPagination.util.js";
 import { RolEnum } from "../../enums/rol.enum.js";
-import Usuario from "../../models/usuario.model.js";
 import {
   getRolesRepository,
   getListRolesRepository,
@@ -8,14 +7,15 @@ import {
   showRoleRepository,
   updateRoleRepository,
   deleteRoleRepository,
+  findRolByNombreRepository,
+  findRolByNombreExcludingIdRepository,
   checkRoleHasUsersRepository,
+  checkRoleHasPermisosRepository,
   setPermisosToRol,
 } from "../../repositories/rol.repository.js";
 
 /**
- * Servicio para obtener roles con filtros, orden y paginación usando el repositorio.
- * @param {Request} req
- * @returns {Promise<Object>}
+ * Servicio para obtener roles con filtros, orden y paginación.
  */
 export const getRolesService = async (req) => {
   const {
@@ -23,7 +23,8 @@ export const getRolesService = async (req) => {
     nombre,
     descripcion,
     estado,
-    sortBy = "id",
+    search,
+    sortBy = "nombre",
     order = "ASC",
     page = 1,
     limit = 10
@@ -31,9 +32,9 @@ export const getRolesService = async (req) => {
 
   // Convertir estado string a boolean si es necesario
   let estadoBoolean = estado;
-  if (estado === 'true') estadoBoolean = true;
-  if (estado === 'false') estadoBoolean = false;
-  if (estado === undefined || estado === null) estadoBoolean = undefined;
+  if (estado === 'true' || estado === 'activo') estadoBoolean = true;
+  if (estado === 'false' || estado === 'inactivo') estadoBoolean = false;
+  if (estado === undefined || estado === null || estado === 'todos') estadoBoolean = undefined;
 
   // Lógica de filtros y paginación delegada al repositorio
   const { data, count } = await getRolesRepository({
@@ -41,6 +42,7 @@ export const getRolesService = async (req) => {
     nombre,
     descripcion,
     estado: estadoBoolean,
+    search,
     sortBy,
     order,
     page,
@@ -72,9 +74,8 @@ export const getRolesService = async (req) => {
 
 /**
  * Servicio para obtener la lista de roles.
- * @returns {Promise<Object>}
  */
-export const getListRolesService = async (estado, sortBy = "id", order = "ASC") => {
+export const getListRolesService = async (estado, sortBy = "nombre", order = "ASC") => {
   return await getListRolesRepository(estado, sortBy, order);
 }
 
@@ -82,7 +83,7 @@ export const getListRolesService = async (estado, sortBy = "id", order = "ASC") 
  * Servicio para crear un nuevo rol.
  */
 export const storeRoleService = async (data) => {
-  // Validaciones
+  // Validar que el nombre no esté vacío
   if (!data.nombre || !data.nombre.trim()) {
     const error = new Error("El nombre del rol es obligatorio");
     error.code = "VALIDATION_ERROR";
@@ -90,48 +91,26 @@ export const storeRoleService = async (data) => {
     throw error;
   }
 
-  if (data.nombre.trim().length < 3) {
-    const error = new Error("El nombre del rol debe tener al menos 3 caracteres");
-    error.code = "VALIDATION_ERROR";
-    error.field = "nombre";
-    throw error;
-  }
-
-  if (data.nombre.trim().length > 50) {
-    const error = new Error("El nombre del rol no puede exceder 50 caracteres");
-    error.code = "VALIDATION_ERROR";
-    error.field = "nombre";
-    throw error;
-  }
-
-  if (data.descripcion && data.descripcion.trim().length > 500) {
-    const error = new Error("La descripción no puede exceder 500 caracteres");
-    error.code = "VALIDATION_ERROR";
-    error.field = "descripcion";
-    throw error;
-  }
-
-  // Verificar que el nombre no esté duplicado
-  const existingRole = await getRolesRepository({
-    nombre: data.nombre.trim(),
-    limit: 1,
-    page: 1
-  });
-
-  if (existingRole.data && existingRole.data.length > 0) {
-    const error = new Error("Ya existe un rol con este nombre");
+  // Verificar si ya existe un rol con el mismo nombre
+  const existingRolByNombre = await findRolByNombreRepository(data.nombre.trim());
+  if (existingRolByNombre) {
+    const error = new Error(`El nombre "${data.nombre}" ya está registrado. No se puede repetir el nombre.`);
     error.code = "DUPLICATE_ROLE_NAME";
-    error.field = "nombre";
     throw error;
   }
 
-  // Crea el rol
+  // Validar que se proporcione al menos un permiso
+  if (!data.permisos || !Array.isArray(data.permisos) || data.permisos.length === 0) {
+    const error = new Error("Un rol debe tener al menos 1 permiso asociado");
+    error.code = "ROLE_NEEDS_PERMISSION";
+    throw error;
+  }
+
+  // Crear el rol
   const rol = await storeRoleRepository(data);
 
-  // Asocia los permisos si vienen en el payload
-  if (Array.isArray(data.permisos)) {
-    await setPermisosToRol(rol.id, data.permisos);
-  }
+  // Asociar los permisos (la validación de al menos 1 permiso se hace en setPermisosToRol)
+  await setPermisosToRol(rol.id, data.permisos);
 
   return rol;
 };
@@ -154,54 +133,6 @@ export const updateRoleService = async (id, data) => {
     throw error;
   }
 
-  // Validaciones
-  if (data.nombre !== undefined) {
-    if (!data.nombre || !data.nombre.trim()) {
-      const error = new Error("El nombre del rol es obligatorio");
-      error.code = "VALIDATION_ERROR";
-      error.field = "nombre";
-      throw error;
-    }
-
-    if (data.nombre.trim().length < 3) {
-      const error = new Error("El nombre del rol debe tener al menos 3 caracteres");
-      error.code = "VALIDATION_ERROR";
-      error.field = "nombre";
-      throw error;
-    }
-
-    if (data.nombre.trim().length > 50) {
-      const error = new Error("El nombre del rol no puede exceder 50 caracteres");
-      error.code = "VALIDATION_ERROR";
-      error.field = "nombre";
-      throw error;
-    }
-
-    // Verificar que el nombre no esté duplicado (excepto el mismo rol)
-    const existingRole = await getRolesRepository({
-      nombre: data.nombre.trim(),
-      limit: 1,
-      page: 1
-    });
-
-    if (existingRole.data && existingRole.data.length > 0) {
-      const foundRole = existingRole.data[0];
-      if (foundRole.id !== parseInt(id)) {
-        const error = new Error("Ya existe un rol con este nombre");
-        error.code = "DUPLICATE_ROLE_NAME";
-        error.field = "nombre";
-        throw error;
-      }
-    }
-  }
-
-  if (data.descripcion !== undefined && data.descripcion && data.descripcion.trim().length > 500) {
-    const error = new Error("La descripción no puede exceder 500 caracteres");
-    error.code = "VALIDATION_ERROR";
-    error.field = "descripcion";
-    throw error;
-  }
-
   // No permitir modificar el nombre de roles propios del sistema
   const rolesProtegidos = [RolEnum.ADMIN, RolEnum.DIRECTOR_REGIONAL, RolEnum.ADMINISTRADOR_CENTRO, RolEnum.REVISOR];
   if (
@@ -214,10 +145,21 @@ export const updateRoleService = async (id, data) => {
     throw error;
   }
 
-  // Actualiza el rol
+  // Si se está actualizando el nombre, verificar que no exista otro rol con el mismo nombre
+  if (data.nombre && data.nombre.trim() !== rol.nombre) {
+    const existingRolByNombre = await findRolByNombreExcludingIdRepository(data.nombre.trim(), id);
+    if (existingRolByNombre) {
+      const error = new Error(`El nombre "${data.nombre}" ya está registrado. No se puede repetir el nombre.`);
+      error.code = "DUPLICATE_ROLE_NAME";
+      throw error;
+    }
+  }
+
+  // Actualizar el rol
   await updateRoleRepository(id, data);
 
-  // Actualiza los permisos si vienen en el payload
+  // Actualizar los permisos si vienen en el payload
+  // Validar que tenga al menos 1 permiso (la validación se hace en setPermisosToRol)
   if (Array.isArray(data.permisos)) {
     await setPermisosToRol(id, data.permisos);
   }
@@ -244,10 +186,10 @@ export const deleteRoleService = async (id) => {
     throw error;
   }
 
-  // Verificar si el rol tiene usuarios asociados (ahora en tabla usuario_rol)
+  // Verificar si el rol tiene usuarios asociados
   const hasUsers = await checkRoleHasUsersRepository(id);
   if (hasUsers) {
-    const error = new Error(`No se puede eliminar el rol porque tiene usuario(s) asociado(s). Debe reasignar los usuarios primero.`);
+    const error = new Error("No se puede eliminar el rol porque tiene usuario(s) asociado(s). Primero reasigne los usuarios.");
     error.code = "ROLE_HAS_USERS";
     throw error;
   }
@@ -257,11 +199,15 @@ export const deleteRoleService = async (id) => {
 };
 
 /**
- * Servicio para cambiar estado a un rol.
+ * Servicio para cambiar estado de un rol.
  */
-export const changeRoleStatusService = async (id, newState) => {
+export const changeRoleStatusService = async (id, nuevoEstado) => {
   const rol = await showRoleRepository(id);
-  if (!rol) return "NOT_FOUND";
+  if (!rol) {
+    const error = new Error("Rol no encontrado");
+    error.code = "NOT_FOUND";
+    throw error;
+  }
 
   // No permitir modificar el estado de roles propios del sistema
   const rolesProtegidos = [RolEnum.ADMIN, RolEnum.DIRECTOR_REGIONAL, RolEnum.ADMINISTRADOR_CENTRO, RolEnum.REVISOR];
@@ -271,18 +217,34 @@ export const changeRoleStatusService = async (id, newState) => {
     throw error;
   }
 
-  // Usar el nuevo estado si se proporciona, sino invertir el actual
-  const estadoFinal = newState !== undefined ? newState : !rol.estado;
-
-  // Si se está intentando desactivar el rol, verificar que no tenga usuarios asociados
-  if (!estadoFinal) {
+  // Si se intenta desactivar, verificar que no tenga usuarios asociados
+  if (nuevoEstado === false || nuevoEstado === 'false') {
     const hasUsers = await checkRoleHasUsersRepository(id);
     if (hasUsers) {
-      const error = new Error(`No se puede desactivar el rol porque tiene usuario(s) asociado(s). Debe reasignar los usuarios primero.`);
+      const error = new Error("No se puede desactivar el rol porque tiene usuario(s) asociado(s). Primero reasigne los usuarios.");
       error.code = "ROLE_HAS_USERS";
       throw error;
     }
   }
 
-  return await updateRoleRepository(id, { estado: estadoFinal });
+  // Determinar el nuevo estado basado en el parámetro recibido
+  let estadoFinal;
+  
+  if (typeof nuevoEstado === 'boolean') {
+    // Si es boolean, usar directamente
+    estadoFinal = nuevoEstado;
+  } else if (nuevoEstado === 'true') {
+    // Si es string 'true', activar
+    estadoFinal = true;
+  } else if (nuevoEstado === 'false') {
+    // Si es string 'false', desactivar
+    estadoFinal = false;
+  } else {
+    // Si no se especifica estado, alternar el estado actual
+    estadoFinal = !rol.estado;
+  }
+
+  // Actualizar el estado del rol
+  const updatedRol = await updateRoleRepository(id, { estado: estadoFinal });
+  return updatedRol;
 }

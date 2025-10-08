@@ -1,5 +1,6 @@
 import express from 'express';
 import * as RolController from '../../controllers/v1/rol/rol.controller.js';
+import * as RolPermisoController from '../../controllers/v1/rol/rolPermiso.controller.js';
 import { createRoleValidator, updateRoleValidator } from "../../middlewares/validators/rol.validator.js";
 import { validateRequest } from "../../middlewares/validateRequest.middleware.js";
 import { verificarToken, verificarCuentaActiva, verificarRolOPermiso } from '../../middlewares/auth.middleware.js';
@@ -8,90 +9,64 @@ import { PermisoEnum } from '../../enums/permiso.enum.js';
 
 const router = express.Router();
 
-router.get(
-    '/',
-    [
-        verificarToken,
-        verificarCuentaActiva,
-        verificarRolOPermiso([
-            RolEnum.ADMINISTRADOR,
-            RolEnum.EMPLEADO,
-            RolEnum.USUARIO
-        ], [PermisoEnum.VER_ROLES])
-    ],
+// Ruta para obtener todos los roles (PÚBLICA)
+router.get('/',
     RolController.getRoles
 );
 
-router.get(
-    '/list',
-    [
-        verificarToken,
-        verificarCuentaActiva,
-        verificarRolOPermiso([
-            RolEnum.ADMIN, RolEnum.DIRECTOR_REGIONAL, RolEnum.ADMINISTRADOR_CENTRO
-        ], [PermisoEnum.GESTIONAR_ROLES])
-    ],
+// Ruta para obtener lista simplificada de roles (PÚBLICA)
+router.get('/list',
     RolController.getListRoles
 );
 
+// Ruta para obtener permisos de un rol específico (PÚBLICA)
+router.get('/:id(\\d+)/permisos',
+    RolPermisoController.getPermisosByRol
+);
 
-router.post("/",
-    createRoleValidator, validateRequest,
+// Ruta para crear un nuevo rol (solo Admin)
+router.post('/',
     [
         verificarToken,
         verificarCuentaActiva,
-        verificarRolOPermiso([
-            RolEnum.ADMIN
-        ], [PermisoEnum.GESTIONAR_ROLES])
+        verificarRolOPermiso([RolEnum.ADMIN], [PermisoEnum.GESTIONAR_ROLES])
     ],
+    createRoleValidator,
     RolController.storeRole
 );
 
+// Ruta para obtener un rol por ID (PÚBLICA)
 router.get('/:id(\\d+)',
-    [
-        verificarToken,
-        verificarCuentaActiva,
-        verificarRolOPermiso([
-            RolEnum.ADMINISTRADOR,
-            RolEnum.EMPLEADO,
-            RolEnum.USUARIO
-        ], [PermisoEnum.VER_ROLES])
-    ],
     RolController.showRole
 );
 
+// Ruta para editar un rol por ID (solo Admin)
 router.put('/:id(\\d+)',
-    updateRoleValidator,
-    validateRequest,
     [
         verificarToken,
         verificarCuentaActiva,
-        verificarRolOPermiso([
-            RolEnum.ADMIN
-        ], [PermisoEnum.GESTIONAR_ROLES])
+        verificarRolOPermiso([RolEnum.ADMIN], [PermisoEnum.GESTIONAR_ROLES])
     ],
+    updateRoleValidator,
     RolController.updateRole
-
 );
 
+// Ruta para cambiar el estado de un rol por ID (solo Admin)
 router.patch('/:id(\\d+)/estado',
     [
         verificarToken,
         verificarCuentaActiva,
-        verificarRolOPermiso([
-            RolEnum.ADMIN
-        ], [PermisoEnum.GESTIONAR_ROLES])
+        verificarRolOPermiso([RolEnum.ADMIN], [PermisoEnum.GESTIONAR_ROLES])
     ],
     RolController.changeRoleStatus
 );
 
+// Ruta para eliminar un rol por ID (solo Admin)
 router.delete('/:id(\\d+)',
     [
         verificarToken,
         verificarCuentaActiva,
-        verificarRolOPermiso([
-            RolEnum.ADMIN
-        ], [PermisoEnum.GESTIONAR_ROLES])
+        verificarRolOPermiso([RolEnum.ADMIN], [PermisoEnum.GESTIONAR_ROLES])
     ],
     RolController.deleteRole
 );

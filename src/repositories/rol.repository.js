@@ -12,88 +12,106 @@ export const getRolesRepository = async ({
     nombre,
     descripcion,
     estado,
+    search,
     sortBy = "id",
     order = "ASC",
     page = 1,
     limit = 10
 }) => {
-    const where = {};
-    if (id) where.id = id;
-    if (nombre) where.nombre = { [Op.like]: `%${nombre}%` };
-    if (descripcion) where.descripcion = { [Op.like]: `%${descripcion}%` };
-    if (estado !== undefined) where.estado = estado;
+    const whereClause = {};
 
-    const allowedSort = ["id", "nombre", "descripcion", "estado", "created_at"];
-    const orderBy = allowedSort.includes(sortBy) ? sortBy : "id";
-    const orderDirection = order.toUpperCase() === "DESC" ? "DESC" : "ASC";
+    if (id) {
+        whereClause.id = { [Op.eq]: id };
+    }
 
-    const offset = (parseInt(page) - 1) * parseInt(limit);
+    if (estado !== undefined) {
+        whereClause.estado = { [Op.eq]: estado };
+    }
 
-    // Primero obtenemos el total sin las relaciones para count correcto
-    const totalCount = await Rol.count({ where });
+    // Búsqueda global: buscar en múltiples campos
+    if (search) {
+        whereClause[Op.or] = [
+            { nombre: { [Op.like]: `%${search}%` } },
+            { descripcion: { [Op.like]: `%${search}%` } },
+        ];
+    } else {
+        if (nombre) {
+            whereClause.nombre = { [Op.like]: `%${nombre}%` };
+        }
+        if (descripcion) {
+            whereClause.descripcion = { [Op.like]: `%${descripcion}%` };
+        }
+    }
 
-    // Luego obtenemos los roles con las relaciones
-    const roles = await Rol.findAll({
-        where,
-        include: [
-            {
-                model: Usuario,
-                as: 'usuarios',
-                attributes: ['id'],
-                required: false,
-            },
-            {
-                model: Permiso,
-                as: 'permisos',
-                attributes: ['id', 'nombre'],
-                required: false,
-                through: { attributes: [] }
-            }
-        ],
-        order: [[orderBy, orderDirection]],
+    const offset = (page - 1) * limit;
+
+    const { count, rows } = await Rol.findAndCountAll({
+        where: whereClause,
+        order: [[sortBy, order]],
         limit: parseInt(limit),
-        offset,
+        offset: parseInt(offset),
     });
 
-    // Formatear los datos con las cantidades calculadas
-    const formattedRoles = roles.map(rol => {
-        const rolData = rol.toJSON();
-        return {
-            id: rolData.id,
-            nombre: rolData.nombre,
-            descripcion: rolData.descripcion,
-            estado: rolData.estado,
-            created_at: rolData.created_at,
-            cantidadUsuarios: rolData.usuarios ? rolData.usuarios.length : 0,
-            cantidadPermisos: rolData.permisos ? rolData.permisos.length : 0,
-            permisos: rolData.permisos || [],
-            usuarios: rolData.usuarios || []
-        };
-    });
-
-    return { data: formattedRoles, count: totalCount };
+    return {
+        data: rows,
+        count,
+    };
 };
 
 /**
  * Repositorio para la lista de roles.
  */
-export const getListRolesRepository = async (estado, sortBy = "id", order = "ASC") => {
-    const where = {};
-    if (estado !== undefined) where.estado = estado;
+export const getListRolesRepository = async (estado, sortBy = "nombre", order = "ASC") => {
+    const whereClause = {};
 
-    const allowedSort = ["id", "nombre", "descripcion", "estado"];
-    const orderBy = allowedSort.includes(sortBy) ? sortBy : "id";
-    const orderDirection = order.toUpperCase() === "DESC" ? "DESC" : "ASC";
+    if (estado !== undefined) {
+        whereClause.estado = { [Op.eq]: estado };
+    }
 
     const roles = await Rol.findAll({
-        attributes: ["id", "nombre", "descripcion", "estado"],
-        where,
-        order: [[orderBy, orderDirection]],
+        where: whereClause,
+        order: [[sortBy, order]],
+        attributes: ['id', 'nombre', 'descripcion', 'estado', 'created_at', 'updated_at'],
     });
-    return { data: roles, count: roles.length };
+
+    return {
+        data: roles,
+        count: roles.length,
+    };
 };
 
+/**
+ * Buscar un rol por nombre.
+ */
+export const findRolByNombreRepository = async (nombre) => {
+    return await Rol.findOne({
+        where: { 
+            nombre: nombre
+        },
+        attributes: ['id', 'nombre', 'descripcion', 'estado']
+    });
+};
 
+/**
+ * Buscar un rol por nombre excluyendo un ID.
+ */
+export const findRolByNombreExcludingIdRepository = async (nombre, idExcluir) => {
+    return await Rol.findOne({
+        where: {
+            nombre: {
+                [Op.like]: nombre
+            },
+            id: {
+                [Op.ne]: idExcluir
+            }
+        },
+        attributes: ['id', 'nombre', 'descripcion', 'estado']
+    });
+};
+
+/**
+ * Buscar rol por nombre (legacy - mantener compatibilidad).
+ */
 export const getRoleByNameRepository = async (nombre) => {
     return await Rol.findOne({
         where: {
@@ -103,12 +121,22 @@ export const getRoleByNameRepository = async (nombre) => {
 }
 
 /**
+ * Buscar un rol por ID.
+ */
+export const findRolByIdRepository = async (id) => {
+    return await Rol.findOne({
+        where: { id },
+        attributes: ['id', 'nombre', 'descripcion', 'estado']
+    });
+};
+
+/**
  * Crear un nuevo rol.
  */
 export const storeRoleRepository = async (data) => {
     return await Rol.create({
         nombre: data.nombre.trim(),
-        descripcion: data.descripcion ? data.descripcion.trim() : 'no registra',
+        descripcion: data.descripcion ? data.descripcion.trim() : null,
         estado: data.estado !== undefined ? data.estado : true,
     });
 };
@@ -131,15 +159,28 @@ export const showRoleRepository = async (id) => {
 };
 
 /**
- * Actualizar un rol.
+ * Actualizar un rol por ID.
  */
 export const updateRoleRepository = async (id, data) => {
-    const rol = await Rol.findByPk(id);
+    const rol = await Rol.findOne({ where: { id } });
     if (!rol) return null;
-    rol.nombre = data.nombre ? data.nombre.trim() : rol.nombre;
-    rol.descripcion = data.descripcion !== undefined ? data.descripcion.trim() : rol.descripcion;
-    rol.estado = data.estado !== undefined ? data.estado : rol.estado;
-    await rol.save();
+
+    // Agregar timestamp de actualización
+    const updateData = {
+        ...data,
+        updated_at: new Date()
+    };
+
+    if (updateData.nombre) {
+        updateData.nombre = updateData.nombre.trim();
+    }
+
+    if (updateData.descripcion !== undefined && updateData.descripcion) {
+        updateData.descripcion = updateData.descripcion.trim();
+    }
+
+    await rol.update(updateData);
+    await rol.reload();
     return rol;
 };
 
@@ -154,23 +195,62 @@ export const deleteRoleRepository = async (id) => {
 };
 
 /**
+ * Contar usuarios por rol.
+ */
+export const countUsuariosByRolRepository = async (id) => {
+    return await Usuario.count({
+        where: { rol_id: id }
+    });
+};
+
+/**
  * Verificar si un rol tiene usuarios asociados.
  */
 export const checkRoleHasUsersRepository = async (id) => {
-    const count = await Usuario.count({
-        where: { rol_id: id }
-    });
+    const count = await countUsuariosByRolRepository(id);
     return count > 0;
 };
 
 /**
- * Asociar permisos a un rol (sobrescribe los existentes)
+ * Contar permisos asociados a un rol.
+ */
+export const countPermisosByRolRepository = async (rolId) => {
+    return await RolPermiso.count({
+        where: { rol_id: rolId }
+    });
+};
+
+/**
+ * Verificar si un rol tiene permisos asociados.
+ */
+export const checkRoleHasPermisosRepository = async (rolId) => {
+    const count = await countPermisosByRolRepository(rolId);
+    return count > 0;
+};
+
+/**
+ * Asociar permisos a un rol (sobrescribe los existentes).
+ * Valida que se asocie al menos 1 permiso.
  */
 export const setPermisosToRol = async (rolId, permisosIds = []) => {
+    // Validar que se proporcione al menos un permiso
+    if (!permisosIds || permisosIds.length === 0) {
+        const error = new Error("Un rol debe tener al menos 1 permiso asociado");
+        error.code = "ROLE_NEEDS_PERMISSION";
+        throw error;
+    }
+
     // Validar que los IDs de permisos existan
     const permisos = await Permiso.findAll({
         where: { id: permisosIds }
     });
+    
+    if (permisos.length === 0) {
+        const error = new Error("No se encontraron permisos válidos con los IDs proporcionados");
+        error.code = "INVALID_PERMISSION_IDS";
+        throw error;
+    }
+
     const validPermisosIds = permisos.map(p => p.id);
 
     // Elimina las asociaciones actuales
@@ -181,7 +261,8 @@ export const setPermisosToRol = async (rolId, permisosIds = []) => {
         rol_id: rolId,
         permiso_id: permisoId
     }));
-    if (bulkData.length > 0) {
-        await RolPermiso.bulkCreate(bulkData);
-    }
+    
+    await RolPermiso.bulkCreate(bulkData);
+    
+    return validPermisosIds.length;
 };
