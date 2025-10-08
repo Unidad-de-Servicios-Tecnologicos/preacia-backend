@@ -39,25 +39,18 @@ const Centro = sequelize.define(
       allowNull: true,
       comment: 'Teléfono de contacto',
     },
-    activo: {
+    estado: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: true,
       comment: 'Estado activo/inactivo',
     },
-    created_at: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: DataTypes.NOW,
-    },
-    updated_at: {
-      type: DataTypes.DATE,
-      allowNull: true,
-    },
   },
   {
     tableName: 'centros',
-    timestamps: false,
+    timestamps: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
     charset: 'utf8mb4',
     collate: 'utf8mb4_unicode_ci',
     indexes: [
@@ -66,8 +59,8 @@ const Centro = sequelize.define(
         fields: ['regional_id'],
       },
       {
-        name: 'idx_activo',
-        fields: ['activo'],
+        name: 'idx_estado',
+        fields: ['estado'],
       },
       {
         name: 'unique_codigo_regional',

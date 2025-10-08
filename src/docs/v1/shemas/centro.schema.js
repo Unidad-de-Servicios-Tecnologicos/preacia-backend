@@ -36,7 +36,7 @@ export const centroSchemas = {
                 description: 'Teléfono de contacto',
                 example: '(604) 360-0000'
             },
-            activo: {
+            estado: {
                 type: 'boolean',
                 description: 'Estado activo/inactivo del centro',
                 example: true,
@@ -168,7 +168,7 @@ export const centroSchemas = {
                 description: 'Teléfono de contacto',
                 example: '(604) 360-0000'
             },
-            activo: {
+            estado: {
                 type: 'boolean',
                 description: 'Estado activo/inactivo',
                 example: true
@@ -209,7 +209,7 @@ export const centroSchemas = {
                 description: 'Teléfono de contacto',
                 example: '(604) 360-0000'
             },
-            activo: {
+            estado: {
                 type: 'boolean',
                 description: 'Estado activo/inactivo',
                 example: true
@@ -220,13 +220,13 @@ export const centroSchemas = {
     CambiarEstadoCentro: {
         type: 'object',
         properties: {
-            activo: {
+            estado: {
                 type: 'boolean',
                 description: 'Nuevo estado del centro',
                 example: false
             }
         },
-        required: ['activo']
+        required: ['estado']
     }
 };
 

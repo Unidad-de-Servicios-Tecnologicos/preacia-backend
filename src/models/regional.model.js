@@ -31,31 +31,24 @@ const Regional = sequelize.define(
       allowNull: true,
       comment: 'Teléfono de contacto',
     },
-    activo: {
+    estado: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: true,
       comment: 'Estado activo/inactivo',
     },
-    created_at: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: DataTypes.NOW,
-    },
-    updated_at: {
-      type: DataTypes.DATE,
-      allowNull: true,
-    },
   },
   {
     tableName: 'regionales',
-    timestamps: false,
+    timestamps: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
     charset: 'utf8mb4',
     collate: 'utf8mb4_unicode_ci',
     indexes: [
       {
-        name: 'idx_activo',
-        fields: ['activo'],
+        name: 'idx_estado',
+        fields: ['estado'],
       },
       {
         name: 'idx_codigo',

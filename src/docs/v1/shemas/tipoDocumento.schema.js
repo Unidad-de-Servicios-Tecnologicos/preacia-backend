@@ -19,7 +19,7 @@ export const tipoDocumentoSchemas = {
                 description: 'Nombre completo del tipo de documento',
                 example: 'Cédula de Ciudadanía'
             },
-            activo: {
+            estado: {
                 type: 'boolean',
                 description: 'Estado activo/inactivo del tipo de documento',
                 example: true,

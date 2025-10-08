@@ -20,7 +20,7 @@ router.get('/',
         verificarCuentaActiva,
         verificarRolOPermiso(
             [RolEnum.ADMIN, RolEnum.DIRECTOR_REGIONAL, RolEnum.ADMINISTRADOR_CENTRO],
-            [PermisoEnum.GESTIONAR_USUARIOS]
+            [PermisoEnum.VER_USUARIOS_TODOS, PermisoEnum.VER_USUARIOS_REGIONAL, PermisoEnum.VER_USUARIOS_CENTRO]
         ),
     ],
     usuarioController.getUsuarios
@@ -33,7 +33,7 @@ router.get('/list',
         verificarCuentaActiva,
         verificarRolOPermiso(
             [RolEnum.ADMIN, RolEnum.DIRECTOR_REGIONAL, RolEnum.ADMINISTRADOR_CENTRO],
-            [PermisoEnum.GESTIONAR_USUARIOS]
+            [PermisoEnum.VER_USUARIOS_TODOS, PermisoEnum.VER_USUARIOS_REGIONAL, PermisoEnum.VER_USUARIOS_CENTRO]
         ),
     ],
     usuarioController.getListUsuarios
@@ -46,7 +46,7 @@ router.post('/',
         verificarCuentaActiva,
         verificarRolOPermiso(
             [RolEnum.ADMIN, RolEnum.DIRECTOR_REGIONAL, RolEnum.ADMINISTRADOR_CENTRO],
-            [PermisoEnum.GESTIONAR_USUARIOS]
+            [PermisoEnum.CREAR_USUARIOS_TODOS, PermisoEnum.CREAR_USUARIOS_REGIONAL, PermisoEnum.CREAR_USUARIOS_CENTRO]
         )
     ],
     registerUserValidator,
@@ -60,7 +60,7 @@ router.put('/:id',
         verificarCuentaActiva,
         verificarRolOPermiso(
             [RolEnum.ADMIN, RolEnum.DIRECTOR_REGIONAL, RolEnum.ADMINISTRADOR_CENTRO],
-            [PermisoEnum.GESTIONAR_USUARIOS]
+            [PermisoEnum.EDITAR_USUARIOS_TODOS, PermisoEnum.EDITAR_USUARIOS_REGIONAL, PermisoEnum.EDITAR_USUARIOS_CENTRO]
         )
     ],
     [...idParamValidator, ...updateUserValidator],
@@ -74,7 +74,7 @@ router.patch('/:id/estado',
         verificarCuentaActiva,
         verificarRolOPermiso(
             [RolEnum.ADMIN, RolEnum.DIRECTOR_REGIONAL, RolEnum.ADMINISTRADOR_CENTRO],
-            [PermisoEnum.GESTIONAR_USUARIOS]
+            [PermisoEnum.DESACTIVAR_USUARIOS_TODOS, PermisoEnum.DESACTIVAR_USUARIOS_REGIONAL, PermisoEnum.DESACTIVAR_USUARIOS_CENTRO]
         )
     ],
     [...idParamValidator, ...cambiarEstadoUsuarioValidator],
@@ -88,7 +88,7 @@ router.get('/:id',
         verificarCuentaActiva,
         verificarRolOPermiso(
             [RolEnum.ADMIN, RolEnum.DIRECTOR_REGIONAL, RolEnum.ADMINISTRADOR_CENTRO],
-            [PermisoEnum.GESTIONAR_USUARIOS]
+            [PermisoEnum.VER_USUARIOS_TODOS, PermisoEnum.VER_USUARIOS_REGIONAL, PermisoEnum.VER_USUARIOS_CENTRO]
         )
     ],
     idParamValidator,

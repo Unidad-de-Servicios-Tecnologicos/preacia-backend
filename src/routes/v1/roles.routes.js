@@ -26,7 +26,10 @@ router.get(
     '/list',
     [
         verificarToken,
-        verificarCuentaActiva
+        verificarCuentaActiva,
+        verificarRolOPermiso([
+            RolEnum.ADMIN, RolEnum.DIRECTOR_REGIONAL, RolEnum.ADMINISTRADOR_CENTRO
+        ], [PermisoEnum.GESTIONAR_ROLES])
     ],
     RolController.getListRoles
 );
@@ -38,8 +41,8 @@ router.post("/",
         verificarToken,
         verificarCuentaActiva,
         verificarRolOPermiso([
-            RolEnum.ADMINISTRADOR,
-        ], [PermisoEnum.CREAR_ROLES])
+            RolEnum.ADMIN
+        ], [PermisoEnum.GESTIONAR_ROLES])
     ],
     RolController.storeRole
 );
@@ -64,8 +67,8 @@ router.put('/:id(\\d+)',
         verificarToken,
         verificarCuentaActiva,
         verificarRolOPermiso([
-            RolEnum.ADMINISTRADOR,
-        ], [PermisoEnum.EDITAR_ROLES])
+            RolEnum.ADMIN
+        ], [PermisoEnum.GESTIONAR_ROLES])
     ],
     RolController.updateRole
 
@@ -76,8 +79,8 @@ router.patch('/:id(\\d+)/estado',
         verificarToken,
         verificarCuentaActiva,
         verificarRolOPermiso([
-            RolEnum.ADMINISTRADOR
-        ], [PermisoEnum.CAMBIAR_ESTADO_ROLES])
+            RolEnum.ADMIN
+        ], [PermisoEnum.GESTIONAR_ROLES])
     ],
     RolController.changeRoleStatus
 );
@@ -87,8 +90,8 @@ router.delete('/:id(\\d+)',
         verificarToken,
         verificarCuentaActiva,
         verificarRolOPermiso([
-            RolEnum.ADMINISTRADOR
-        ], [PermisoEnum.ELIMINAR_ROLES])
+            RolEnum.ADMIN
+        ], [PermisoEnum.GESTIONAR_ROLES])
     ],
     RolController.deleteRole
 );

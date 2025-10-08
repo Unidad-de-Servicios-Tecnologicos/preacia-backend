@@ -31,7 +31,7 @@ export const regionalSchemas = {
                 description: 'Teléfono de contacto',
                 example: '(604) 360-0000'
             },
-            activo: {
+            estado: {
                 type: 'boolean',
                 description: 'Estado activo/inactivo de la regional',
                 example: true,
@@ -140,7 +140,7 @@ export const regionalSchemas = {
                 description: 'Teléfono de contacto',
                 example: '(604) 360-0000'
             },
-            activo: {
+            estado: {
                 type: 'boolean',
                 description: 'Estado activo/inactivo',
                 example: true
@@ -176,7 +176,7 @@ export const regionalSchemas = {
                 description: 'Teléfono de contacto',
                 example: '(604) 360-0000'
             },
-            activo: {
+            estado: {
                 type: 'boolean',
                 description: 'Estado activo/inactivo',
                 example: true
@@ -187,13 +187,13 @@ export const regionalSchemas = {
     CambiarEstadoRegional: {
         type: 'object',
         properties: {
-            activo: {
+            estado: {
                 type: 'boolean',
                 description: 'Nuevo estado de la regional',
                 example: false
             }
         },
-        required: ['activo']
+        required: ['estado']
     },
 
     ErrorResponse: {

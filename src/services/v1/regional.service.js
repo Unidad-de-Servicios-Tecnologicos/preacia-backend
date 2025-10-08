@@ -21,7 +21,7 @@ export const getRegionalesService = async (req) => {
         id,
         codigo,
         nombre,
-        activo,
+        estado,
         search,
         sortBy = "nombre",
         order = "ASC",
@@ -29,18 +29,18 @@ export const getRegionalesService = async (req) => {
         limit = 10
     } = req.query;
 
-    // Convertir activo string a boolean si es necesario
-    let activoBoolean = activo;
-    if (activo === 'true' || activo === 'activo') activoBoolean = true;
-    if (activo === 'false' || activo === 'inactivo') activoBoolean = false;
-    if (activo === undefined || activo === null || activo === 'todos') activoBoolean = undefined;
+    // Convertir estado string a boolean si es necesario
+    let estadoBoolean = estado;
+    if (estado === 'true' || estado === 'activo') estadoBoolean = true;
+    if (estado === 'false' || estado === 'inactivo') estadoBoolean = false;
+    if (estado === undefined || estado === null || estado === 'todos') estadoBoolean = undefined;
 
     // Lógica de filtros y paginación delegada al repositorio
     const { data, count } = await getRegionalesRepository({
         id,
         codigo,
         nombre,
-        activo: activoBoolean,
+        estado: estadoBoolean,
         search,
         sortBy,
         order,
@@ -74,8 +74,8 @@ export const getRegionalesService = async (req) => {
 /**
  * Servicio para obtener la lista de regionales.
  */
-export const getListRegionalesService = async (activo, sortBy = "nombre", order = "ASC") => {
-    return await getListRegionalesRepository(activo, sortBy, order);
+export const getListRegionalesService = async (estado, sortBy = "nombre", order = "ASC") => {
+    return await getListRegionalesRepository(estado, sortBy, order);
 };
 
 /**
@@ -145,7 +145,7 @@ export const updateRegionalService = async (id, data) => {
 /**
  * Servicio para cambiar estado de una regional.
  */
-export const changeRegionalStatusService = async (id, nuevoActivo) => {
+export const changeRegionalStatusService = async (id, nuevoEstado) => {
     const regional = await showRegionalRepository(id);
     if (!regional) {
         const error = new Error("Regional no encontrada");
@@ -154,7 +154,7 @@ export const changeRegionalStatusService = async (id, nuevoActivo) => {
     }
 
     // Si se intenta desactivar, verificar que no tenga centros asociados
-    if (nuevoActivo === false || nuevoActivo === 'false') {
+    if (nuevoEstado === false || nuevoEstado === 'false') {
         const hasCentros = await checkRegionalHasCentrosRepository(id);
         if (hasCentros) {
             const error = new Error("No se puede desactivar la regional porque tiene centros de formación asociados. Primero desactive o reasigne los centros.");
@@ -164,24 +164,24 @@ export const changeRegionalStatusService = async (id, nuevoActivo) => {
     }
 
     // Determinar el nuevo estado basado en el parámetro recibido
-    let nuevoEstado;
+    let estadoFinal;
     
-    if (typeof nuevoActivo === 'boolean') {
+    if (typeof nuevoEstado === 'boolean') {
         // Si es boolean, usar directamente
-        nuevoEstado = nuevoActivo;
-    } else if (nuevoActivo === 'true') {
+        estadoFinal = nuevoEstado;
+    } else if (nuevoEstado === 'true') {
         // Si es string 'true', activar
-        nuevoEstado = true;
-    } else if (nuevoActivo === 'false') {
+        estadoFinal = true;
+    } else if (nuevoEstado === 'false') {
         // Si es string 'false', desactivar
-        nuevoEstado = false;
+        estadoFinal = false;
     } else {
         // Si no se especifica estado, alternar el estado actual
-        nuevoEstado = !regional.activo;
+        estadoFinal = !regional.estado;
     }
 
     // Actualizar el estado de la regional
-    const updatedRegional = await updateRegionalRepository(id, { activo: nuevoEstado });
+    const updatedRegional = await updateRegionalRepository(id, { estado: estadoFinal });
     return updatedRegional;
 };
 

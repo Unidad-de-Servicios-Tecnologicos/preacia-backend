@@ -10,7 +10,7 @@ const idParamValidator = [
 
 
 const cambiarEstadoValidator = [
-    body('activo')
+    body('estado')
         .isBoolean()
         .withMessage('El estado debe ser un valor booleano (true o false).')
         .notEmpty()
@@ -39,7 +39,7 @@ const createTipoDocumentoValidator = [
         .withMessage('El nombre es obligatorio.')
         .trim(),
 
-    body('activo')
+    body('estado')
         .optional()
         .isBoolean()
         .withMessage('El estado debe ser un valor booleano (true o false).'),
@@ -66,7 +66,7 @@ const updateTipoDocumentoValidator = [
         .isLength({ min: 3, max: 100 })
         .withMessage('El nombre debe tener entre 3 y 100 caracteres.'),
 
-    body('activo')
+    body('estado')
         .optional()
         .isBoolean()
         .withMessage('El estado debe ser un valor booleano (true o false).'),

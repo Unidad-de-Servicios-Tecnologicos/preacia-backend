@@ -1,5 +1,6 @@
 import express from 'express';
 import * as regionalController from '../../controllers/v1/regional/regional.controller.js';
+import * as regionalCentroController from '../../controllers/v1/regional/regionalCentro.controller.js';
 
 import { 
     createRegionalValidator, 
@@ -20,7 +21,7 @@ router.get('/',
     verificarCuentaActiva,
     verificarRolOPermiso(
       [RolEnum.ADMIN, RolEnum.DIRECTOR_REGIONAL, RolEnum.ADMINISTRADOR_CENTRO, RolEnum.REVISOR],
-      [PermisoEnum.GESTIONAR_REGIONALES]
+      [PermisoEnum.VER_REGIONALES_TODAS, PermisoEnum.VER_REGIONALES_PROPIA]
     ),
   ],
   regionalController.getRegionales
@@ -33,7 +34,7 @@ router.get('/list',
     verificarCuentaActiva,
     verificarRolOPermiso(
       [RolEnum.ADMIN, RolEnum.DIRECTOR_REGIONAL, RolEnum.ADMINISTRADOR_CENTRO, RolEnum.REVISOR],
-      [PermisoEnum.GESTIONAR_REGIONALES]
+      [PermisoEnum.VER_REGIONALES_TODAS, PermisoEnum.VER_REGIONALES_PROPIA]
     ),
   ],
   regionalController.getListRegionales
@@ -46,11 +47,11 @@ router.get('/:id/centros',
     verificarCuentaActiva,
     verificarRolOPermiso(
       [RolEnum.ADMIN, RolEnum.DIRECTOR_REGIONAL, RolEnum.ADMINISTRADOR_CENTRO, RolEnum.REVISOR],
-      [PermisoEnum.GESTIONAR_REGIONALES, PermisoEnum.GESTIONAR_CENTROS]
+      [PermisoEnum.VER_CENTROS_TODOS, PermisoEnum.VER_CENTROS_REGIONAL, PermisoEnum.VER_CENTROS_PROPIOS]
     ),
   ],
   idParamValidator,
-  regionalController.getCentrosByRegional
+  regionalCentroController.getCentrosByRegional
 );
 
 // Ruta para crear una nueva regional (solo Admin Nacional)
@@ -58,7 +59,7 @@ router.post('/',
   [
     verificarToken,
     verificarCuentaActiva,
-    verificarRolOPermiso([RolEnum.ADMIN], [PermisoEnum.GESTIONAR_REGIONALES])
+    verificarRolOPermiso([RolEnum.ADMIN], [PermisoEnum.CREAR_REGIONALES])
   ],
   createRegionalValidator,
   regionalController.storeRegional
@@ -69,7 +70,7 @@ router.put('/:id',
   [
     verificarToken,
     verificarCuentaActiva,
-    verificarRolOPermiso([RolEnum.ADMIN], [PermisoEnum.GESTIONAR_REGIONALES])
+    verificarRolOPermiso([RolEnum.ADMIN], [PermisoEnum.EDITAR_REGIONALES])
   ],
   [...idParamValidator, ...updateRegionalValidator],
   regionalController.updateRegional
@@ -80,7 +81,7 @@ router.patch('/:id/estado',
   [
     verificarToken,
     verificarCuentaActiva,
-    verificarRolOPermiso([RolEnum.ADMIN], [PermisoEnum.GESTIONAR_REGIONALES])
+    verificarRolOPermiso([RolEnum.ADMIN], [PermisoEnum.EDITAR_REGIONALES])
   ],
   [...idParamValidator, ...cambiarEstadoValidator],
   regionalController.changeRegionalStatus
@@ -93,7 +94,7 @@ router.get('/:id',
     verificarCuentaActiva,
     verificarRolOPermiso(
       [RolEnum.ADMIN, RolEnum.DIRECTOR_REGIONAL, RolEnum.ADMINISTRADOR_CENTRO, RolEnum.REVISOR],
-      [PermisoEnum.GESTIONAR_REGIONALES]
+      [PermisoEnum.VER_REGIONALES_TODAS, PermisoEnum.VER_REGIONALES_PROPIA]
     )
   ],
   idParamValidator,

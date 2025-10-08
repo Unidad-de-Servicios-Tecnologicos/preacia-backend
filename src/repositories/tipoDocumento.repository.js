@@ -8,7 +8,7 @@ export const getTipoDocumentosRepository = async ({
   id,
   codigo,
   nombre,
-  activo,
+  estado,
   search, // Nuevo parámetro para búsqueda global      
   sortBy = "id",
   order = "ASC",
@@ -25,8 +25,8 @@ export const getTipoDocumentosRepository = async ({
     whereClause.codigo = { [Op.like]: `%${codigo}%` };
   }
 
-  if (activo !== undefined) {
-    whereClause.activo = { [Op.eq]: activo };
+  if (estado !== undefined) {
+    whereClause.estado = { [Op.eq]: estado };
   }
 
   // Búsqueda global: buscar en múltiples campos
@@ -61,11 +61,11 @@ export const getTipoDocumentosRepository = async ({
 /**
  * Repositorio para la lista de tipos de documentos.
  */
-export const getListTipoDocumentosRepository = async (activo, sortBy = "id", order = "ASC") => {
+export const getListTipoDocumentosRepository = async (estado, sortBy = "id", order = "ASC") => {
   const whereClause = {};
 
-  if (activo !== undefined) {
-    whereClause.activo = { [Op.eq]: activo };
+  if (estado !== undefined) {
+    whereClause.estado = { [Op.eq]: estado };
   }
 
   const { count, rows } = await TipoDocumento.findAndCountAll({
@@ -96,7 +96,7 @@ export const findTipoDocumentoByCodigoRepository = async (codigo) => {
     where: { 
       codigo: codigo.toUpperCase()
     },
-    attributes: ['id', 'codigo', 'nombre', 'activo']
+    attributes: ['id', 'codigo', 'nombre', 'estado']
   });
 };
 
@@ -111,7 +111,7 @@ export const findTipoDocumentoByCodigoExcludingIdRepository = async (codigo, idE
         [Op.ne]: idExcluir
       }
     },
-    attributes: ['id', 'codigo', 'nombre', 'activo']
+    attributes: ['id', 'codigo', 'nombre', 'estado']
   });
 };
 
@@ -153,7 +153,7 @@ export const updateTipoDocumentoRepository = async (id, data) => {
 export const findTipoDocumentoByIdRepository = async (id) => {
   return await TipoDocumento.findOne({
     where: { id },
-    attributes: ['id', 'codigo', 'nombre', 'activo']
+    attributes: ['id', 'codigo', 'nombre', 'estado']
   });
 };
 
@@ -164,9 +164,9 @@ export const findTipoDocumentoByNombreRepository = async (nombre) => {
   return await TipoDocumento.findOne({
     where: {
       nombre: nombre,
-      activo: true
+      estado: true
     },
-    attributes: ['id', 'codigo', 'nombre', 'activo']
+    attributes: ['id', 'codigo', 'nombre', 'estado']
   });
 };
 
@@ -183,6 +183,6 @@ export const findTipoDocumentoByNombreExcludingIdRepository = async (nombre, idE
         [Op.ne]: idExcluir
       }
     },
-    attributes: ['id', 'codigo', 'nombre', 'activo']
+    attributes: ['id', 'codigo', 'nombre', 'estado']
   });
 };

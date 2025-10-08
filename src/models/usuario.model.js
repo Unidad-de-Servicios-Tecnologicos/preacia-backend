@@ -12,14 +12,6 @@ const Usuario = sequelize.define(
             autoIncrement: true,
             allowNull: false,
         },
-        rol_id: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            references: {
-                model: 'roles',
-                key: 'id',
-            },
-        },
         tipo_documento_id: {
             type: DataTypes.INTEGER,
             allowNull: false,
@@ -90,13 +82,15 @@ const Usuario = sequelize.define(
             allowNull: true,
         },
         acia_id: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.STRING(50),
             allowNull: true,
+            comment: 'ID en sistema externo ACIA',
         },
         verificado_acia: {
             type: DataTypes.BOOLEAN,
             allowNull: false,
             defaultValue: false,
+            comment: 'Si fue verificado en sistema ACIA',
         },
         // NUEVAS PROPIEDADES PARA RESET PASSWORD
         reset_token: {

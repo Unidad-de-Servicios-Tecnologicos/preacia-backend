@@ -20,7 +20,7 @@ router.get('/',
     verificarCuentaActiva,
     verificarRolOPermiso(
       [RolEnum.ADMIN, RolEnum.DIRECTOR_REGIONAL, RolEnum.ADMINISTRADOR_CENTRO, RolEnum.REVISOR],
-      [PermisoEnum.GESTIONAR_CENTROS]
+      [PermisoEnum.VER_CENTROS_TODOS, PermisoEnum.VER_CENTROS_REGIONAL, PermisoEnum.VER_CENTROS_PROPIOS]
     ),
   ],
   centroController.getCentros
@@ -33,7 +33,7 @@ router.get('/list',
     verificarCuentaActiva,
     verificarRolOPermiso(
       [RolEnum.ADMIN, RolEnum.DIRECTOR_REGIONAL, RolEnum.ADMINISTRADOR_CENTRO, RolEnum.REVISOR],
-      [PermisoEnum.GESTIONAR_CENTROS]
+      [PermisoEnum.VER_CENTROS_TODOS, PermisoEnum.VER_CENTROS_REGIONAL, PermisoEnum.VER_CENTROS_PROPIOS]
     ),
   ],
   centroController.getListCentros
@@ -44,7 +44,7 @@ router.post('/',
   [
     verificarToken,
     verificarCuentaActiva,
-    verificarRolOPermiso([RolEnum.ADMIN, RolEnum.DIRECTOR_REGIONAL], [PermisoEnum.GESTIONAR_CENTROS])
+    verificarRolOPermiso([RolEnum.ADMIN, RolEnum.DIRECTOR_REGIONAL], [PermisoEnum.CREAR_CENTROS_TODOS, PermisoEnum.CREAR_CENTROS_REGIONAL])
   ],
   createCentroValidator,
   centroController.storeCentro
@@ -55,7 +55,7 @@ router.put('/:id',
   [
     verificarToken,
     verificarCuentaActiva,
-    verificarRolOPermiso([RolEnum.ADMIN, RolEnum.DIRECTOR_REGIONAL], [PermisoEnum.GESTIONAR_CENTROS])
+    verificarRolOPermiso([RolEnum.ADMIN, RolEnum.DIRECTOR_REGIONAL], [PermisoEnum.EDITAR_CENTROS_TODOS, PermisoEnum.EDITAR_CENTROS_REGIONAL])
   ],
   [...idParamValidator, ...updateCentroValidator],
   centroController.updateCentro
@@ -66,7 +66,7 @@ router.patch('/:id/estado',
   [
     verificarToken,
     verificarCuentaActiva,
-    verificarRolOPermiso([RolEnum.ADMIN, RolEnum.DIRECTOR_REGIONAL], [PermisoEnum.GESTIONAR_CENTROS])
+    verificarRolOPermiso([RolEnum.ADMIN, RolEnum.DIRECTOR_REGIONAL], [PermisoEnum.EDITAR_CENTROS_TODOS, PermisoEnum.EDITAR_CENTROS_REGIONAL])
   ],
   [...idParamValidator, ...cambiarEstadoValidator],
   centroController.changeCentroStatus
@@ -79,7 +79,7 @@ router.get('/:id',
     verificarCuentaActiva,
     verificarRolOPermiso(
       [RolEnum.ADMIN, RolEnum.DIRECTOR_REGIONAL, RolEnum.ADMINISTRADOR_CENTRO, RolEnum.REVISOR],
-      [PermisoEnum.GESTIONAR_CENTROS]
+      [PermisoEnum.VER_CENTROS_TODOS, PermisoEnum.VER_CENTROS_REGIONAL, PermisoEnum.VER_CENTROS_PROPIOS]
     )
   ],
   idParamValidator,

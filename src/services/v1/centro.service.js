@@ -23,7 +23,7 @@ export const getCentrosService = async (req) => {
         regional_id,
         codigo,
         nombre,
-        activo,
+        estado,
         search,
         sortBy = "nombre",
         order = "ASC",
@@ -31,11 +31,11 @@ export const getCentrosService = async (req) => {
         limit = 10
     } = req.query;
 
-    // Convertir activo string a boolean si es necesario
-    let activoBoolean = activo;
-    if (activo === 'true' || activo === 'activo') activoBoolean = true;
-    if (activo === 'false' || activo === 'inactivo') activoBoolean = false;
-    if (activo === undefined || activo === null || activo === 'todos') activoBoolean = undefined;
+    // Convertir estado string a boolean si es necesario
+    let estadoBoolean = estado;
+    if (estado === 'true' || estado === 'activo') estadoBoolean = true;
+    if (estado === 'false' || estado === 'inactivo') estadoBoolean = false;
+    if (estado === undefined || estado === null || estado === 'todos') estadoBoolean = undefined;
 
     // Lógica de filtros y paginación delegada al repositorio
     const { data, count } = await getCentrosRepository({
@@ -43,7 +43,7 @@ export const getCentrosService = async (req) => {
         regional_id,
         codigo,
         nombre,
-        activo: activoBoolean,
+        estado: estadoBoolean,
         search,
         sortBy,
         order,
@@ -77,8 +77,8 @@ export const getCentrosService = async (req) => {
 /**
  * Servicio para obtener la lista de centros.
  */
-export const getListCentrosService = async (regional_id, activo, sortBy = "nombre", order = "ASC") => {
-    return await getListCentrosRepository(regional_id, activo, sortBy, order);
+export const getListCentrosService = async (regional_id, estado, sortBy = "nombre", order = "ASC") => {
+    return await getListCentrosRepository(regional_id, estado, sortBy, order);
 };
 
 /**
@@ -94,7 +94,7 @@ export const storeCentroService = async (data) => {
     }
 
     // Verificar que la regional esté activa
-    if (!regional.activo) {
+    if (!regional.estado) {
         const error = new Error(`La regional ${regional.nombre} está inactiva. No se pueden crear centros en regionales inactivas.`);
         error.code = "REGIONAL_INACTIVE";
         throw error;
@@ -189,7 +189,7 @@ export const updateCentroService = async (id, data) => {
 /**
  * Servicio para cambiar estado de un centro.
  */
-export const changeCentroStatusService = async (id, nuevoActivo) => {
+export const changeCentroStatusService = async (id, nuevoEstado) => {
     const centro = await showCentroRepository(id);
     if (!centro) {
         const error = new Error("Centro no encontrado");
@@ -198,7 +198,7 @@ export const changeCentroStatusService = async (id, nuevoActivo) => {
     }
 
     // Si se intenta desactivar, verificar que no tenga usuarios asociados
-    if (nuevoActivo === false || nuevoActivo === 'false') {
+    if (nuevoEstado === false || nuevoEstado === 'false') {
         const hasUsuarios = await checkCentroHasUsuariosRepository(id);
         if (hasUsuarios) {
             const error = new Error("No se puede desactivar el centro porque tiene usuarios asociados. Primero desactive o reasigne los usuarios.");
@@ -208,24 +208,24 @@ export const changeCentroStatusService = async (id, nuevoActivo) => {
     }
 
     // Determinar el nuevo estado basado en el parámetro recibido
-    let nuevoEstado;
+    let estadoFinal;
     
-    if (typeof nuevoActivo === 'boolean') {
+    if (typeof nuevoEstado === 'boolean') {
         // Si es boolean, usar directamente
-        nuevoEstado = nuevoActivo;
-    } else if (nuevoActivo === 'true') {
+        estadoFinal = nuevoEstado;
+    } else if (nuevoEstado === 'true') {
         // Si es string 'true', activar
-        nuevoEstado = true;
-    } else if (nuevoActivo === 'false') {
+        estadoFinal = true;
+    } else if (nuevoEstado === 'false') {
         // Si es string 'false', desactivar
-        nuevoEstado = false;
+        estadoFinal = false;
     } else {
         // Si no se especifica estado, alternar el estado actual
-        nuevoEstado = !centro.activo;
+        estadoFinal = !centro.estado;
     }
 
     // Actualizar el estado del centro
-    const updatedCentro = await updateCentroRepository(id, { activo: nuevoEstado });
+    const updatedCentro = await updateCentroRepository(id, { estado: estadoFinal });
     return updatedCentro;
 };
 

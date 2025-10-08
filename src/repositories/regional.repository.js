@@ -8,7 +8,7 @@ export const getRegionalesRepository = async ({
   id,
   codigo,
   nombre,
-  activo,
+  estado,
   search,
   sortBy = "id",
   order = "ASC",
@@ -25,8 +25,8 @@ export const getRegionalesRepository = async ({
     whereClause.codigo = { [Op.like]: `%${codigo}%` };
   }
 
-  if (activo !== undefined) {
-    whereClause.activo = { [Op.eq]: activo };
+  if (estado !== undefined) {
+    whereClause.estado = { [Op.eq]: estado };
   }
 
   // Búsqueda global: buscar en múltiples campos
@@ -65,14 +65,14 @@ export const getRegionalesRepository = async ({
 export const getListRegionalesRepository = async (activo, sortBy = "nombre", order = "ASC") => {
   const whereClause = {};
 
-  if (activo !== undefined) {
-    whereClause.activo = { [Op.eq]: activo };
+  if (estado !== undefined) {
+    whereClause.estado = { [Op.eq]: estado };
   }
 
   const { count, rows } = await Regional.findAndCountAll({
     where: whereClause,
     order: [[sortBy, order]],
-    attributes: ['id', 'codigo', 'nombre', 'activo'],
+    attributes: ['id', 'codigo', 'nombre', 'estado'],
   });
 
   return {
@@ -98,7 +98,7 @@ export const findRegionalByCodigoRepository = async (codigo) => {
     where: { 
       codigo: codigo.toUpperCase()
     },
-    attributes: ['id', 'codigo', 'nombre', 'activo']
+    attributes: ['id', 'codigo', 'nombre', 'estado']
   });
 };
 
@@ -113,7 +113,7 @@ export const findRegionalByCodigoExcludingIdRepository = async (codigo, idExclui
         [Op.ne]: idExcluir
       }
     },
-    attributes: ['id', 'codigo', 'nombre', 'activo']
+    attributes: ['id', 'codigo', 'nombre', 'estado']
   });
 };
 
@@ -155,7 +155,7 @@ export const updateRegionalRepository = async (id, data) => {
 export const findRegionalByIdRepository = async (id) => {
   return await Regional.findOne({
     where: { id },
-    attributes: ['id', 'codigo', 'nombre', 'activo']
+    attributes: ['id', 'codigo', 'nombre', 'estado']
   });
 };
 
@@ -166,9 +166,9 @@ export const findRegionalByNombreRepository = async (nombre) => {
   return await Regional.findOne({
     where: {
       nombre: nombre,
-      activo: true
+      estado: true
     },
-    attributes: ['id', 'codigo', 'nombre', 'activo']
+    attributes: ['id', 'codigo', 'nombre', 'estado']
   });
 };
 
@@ -185,7 +185,7 @@ export const findRegionalByNombreExcludingIdRepository = async (nombre, idExclui
         [Op.ne]: idExcluir
       }
     },
-    attributes: ['id', 'codigo', 'nombre', 'activo']
+    attributes: ['id', 'codigo', 'nombre', 'estado']
   });
 };
 

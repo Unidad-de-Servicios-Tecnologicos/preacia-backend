@@ -12,21 +12,20 @@ export const usuarioSchemas = {
                 description: 'ID del tipo de documento',
                 example: 1
             },
-            rol_id: {
-                type: 'integer',
-                description: 'ID del rol asignado',
-                example: 2
-            },
-            rol: {
-                type: 'object',
-                properties: {
-                    id: {
-                        type: 'integer',
-                        example: 2
-                    },
-                    nombre: {
-                        type: 'string',
-                        example: 'Aprendiz'
+            roles: {
+                type: 'array',
+                description: 'Roles asignados al usuario',
+                items: {
+                    type: 'object',
+                    properties: {
+                        id: {
+                            type: 'integer',
+                            example: 2
+                        },
+                        nombre: {
+                            type: 'string',
+                            example: 'Aprendiz'
+                        }
                     }
                 }
             },
@@ -82,6 +81,13 @@ export const usuarioSchemas = {
                 example: '2024-01-15T10:30:00.000Z',
                 nullable: true
             },
+            acia_id: {
+                type: 'string',
+                maxLength: 50,
+                description: 'ID en sistema externo ACIA',
+                example: 'ACIA-12345',
+                nullable: true
+            },
             verificado_acia: {
                 type: 'boolean',
                 description: 'Indica si el usuario está verificado por ACIA',
@@ -113,7 +119,7 @@ export const usuarioSchemas = {
                 example: '2024-01-15T10:30:00.000Z'
             }
         },
-        required: ['tipo_documento_id', 'rol_id', 'documento', 'nombres', 'correo']
+        required: ['tipo_documento_id', 'documento', 'nombres', 'correo']
     },
 
     UsuariosPaginados: {
@@ -192,10 +198,13 @@ export const usuarioSchemas = {
                 description: 'Nombre del tipo de documento (ej: "Cédula de Ciudadanía")',
                 example: 'Cédula de Ciudadanía'
             },
-            rol_nombre: {
-                type: 'string',
-                description: 'Nombre del rol (opcional, por defecto "Aprendiz")',
-                example: 'Aprendiz'
+            roles_nombres: {
+                type: 'array',
+                description: 'Nombres de los roles a asignar (opcional)',
+                items: {
+                    type: 'string'
+                },
+                example: ['Aprendiz', 'Monitor']
             },
             documento: {
                 type: 'string',
@@ -263,10 +272,13 @@ export const usuarioSchemas = {
                 description: 'Nombre del tipo de documento',
                 example: 'Cédula de Ciudadanía'
             },
-            rol_nombre: {
-                type: 'string',
-                description: 'Nombre del rol',
-                example: 'Aprendiz'
+            roles_nombres: {
+                type: 'array',
+                description: 'Nombres de los roles a asignar',
+                items: {
+                    type: 'string'
+                },
+                example: ['Aprendiz', 'Monitor']
             },
             documento: {
                 type: 'string',
@@ -344,9 +356,13 @@ export const usuarioSchemas = {
                 type: 'string',
                 example: 'juan.perez@example.com'
             },
-            rol: {
-                type: 'string',
-                example: 'Aprendiz'
+            roles: {
+                type: 'array',
+                description: 'Roles del usuario',
+                items: {
+                    type: 'string'
+                },
+                example: ['Aprendiz']
             },
             estado: {
                 type: 'boolean',

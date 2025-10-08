@@ -9,7 +9,7 @@ const idParamValidator = [
 ];
 
 const cambiarEstadoValidator = [
-    body('activo')
+    body('estado')
         .isBoolean()
         .withMessage('El estado debe ser un valor booleano (true o false).')
         .notEmpty()
@@ -56,7 +56,7 @@ const createRegionalValidator = [
         .withMessage('El teléfono solo puede contener números, espacios, guiones, más y paréntesis.')
         .trim(),
 
-    body('activo')
+    body('estado')
         .optional()
         .isBoolean()
         .withMessage('El estado debe ser un valor booleano (true o false).'),
@@ -101,7 +101,7 @@ const updateRegionalValidator = [
         .matches(/^[0-9\s\-\+\(\)]+$/)
         .withMessage('El teléfono solo puede contener números, espacios, guiones, más y paréntesis.'),
 
-    body('activo')
+    body('estado')
         .optional()
         .isBoolean()
         .withMessage('El estado debe ser un valor booleano (true o false).'),

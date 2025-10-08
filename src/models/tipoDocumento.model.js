@@ -22,31 +22,24 @@ const TipoDocumento = sequelize.define(
       unique: true,
       comment: 'Nombre del tipo de documento',
     },
-    activo: {
+    estado: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: true,
       comment: 'Estado activo/inactivo',
     },
-    created_at: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: DataTypes.NOW,
-    },
-    updated_at: {
-      type: DataTypes.DATE,
-      allowNull: true,
-    },
   },
   {
     tableName: 'tipo_documentos',
-    timestamps: false,
+    timestamps: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
     charset: 'utf8mb4',
     collate: 'utf8mb4_unicode_ci',
     indexes: [
       {
-        name: 'idx_activo',
-        fields: ['activo'],
+        name: 'idx_estado',
+        fields: ['estado'],
       },
     ],
   }

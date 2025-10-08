@@ -12,7 +12,7 @@ import { permisosPaths } from './paths/permiso/permiso.path.js';
 
 
 // Importar esquemas
-import { tipoDocumentoSchemas } from './shemas/tipoDocumento/tipoDocumento.schema.js';
+import { tipoDocumentoSchemas } from './shemas/tipoDocumento.schema.js';
 import { regionalSchemas } from './shemas/regional.schema.js';
 import { centroSchemas } from './shemas/centro.schema.js';
 import { usuarioSchemas } from './shemas/usuario.schema.js';

@@ -10,7 +10,7 @@ export const getCentrosRepository = async ({
   regional_id,
   codigo,
   nombre,
-  activo,
+  estado,
   search,
   sortBy = "nombre",
   order = "ASC",
@@ -31,8 +31,8 @@ export const getCentrosRepository = async ({
     whereClause.codigo = { [Op.like]: `%${codigo}%` };
   }
 
-  if (activo !== undefined) {
-    whereClause.activo = { [Op.eq]: activo };
+  if (estado !== undefined) {
+    whereClause.estado = { [Op.eq]: estado };
   }
 
   // Búsqueda global: buscar en múltiples campos
@@ -82,8 +82,8 @@ export const getListCentrosRepository = async (regional_id, activo, sortBy = "no
     whereClause.regional_id = { [Op.eq]: regional_id };
   }
 
-  if (activo !== undefined) {
-    whereClause.activo = { [Op.eq]: activo };
+  if (estado !== undefined) {
+    whereClause.estado = { [Op.eq]: estado };
   }
 
   const { count, rows } = await Centro.findAndCountAll({
@@ -96,7 +96,7 @@ export const getListCentrosRepository = async (regional_id, activo, sortBy = "no
       }
     ],
     order: [[sortBy, order]],
-    attributes: ['id', 'codigo', 'nombre', 'regional_id', 'activo'],
+    attributes: ['id', 'codigo', 'nombre', 'regional_id', 'estado'],
   });
 
   return {
@@ -130,7 +130,7 @@ export const findCentroByCodigoAndRegionalRepository = async (codigo, regional_i
       codigo: codigo.toUpperCase(),
       regional_id: regional_id
     },
-    attributes: ['id', 'codigo', 'nombre', 'regional_id', 'activo']
+    attributes: ['id', 'codigo', 'nombre', 'regional_id', 'estado']
   });
 };
 
@@ -146,7 +146,7 @@ export const findCentroByCodigoAndRegionalExcludingIdRepository = async (codigo,
         [Op.ne]: idExcluir
       }
     },
-    attributes: ['id', 'codigo', 'nombre', 'regional_id', 'activo']
+    attributes: ['id', 'codigo', 'nombre', 'regional_id', 'estado']
   });
 };
 
@@ -196,7 +196,7 @@ export const updateCentroRepository = async (id, data) => {
 export const findCentroByIdRepository = async (id) => {
   return await Centro.findOne({
     where: { id },
-    attributes: ['id', 'codigo', 'nombre', 'regional_id', 'activo']
+    attributes: ['id', 'codigo', 'nombre', 'regional_id', 'estado']
   });
 };
 
@@ -208,9 +208,9 @@ export const findCentroByNombreAndRegionalRepository = async (nombre, regional_i
     where: {
       nombre: nombre,
       regional_id: regional_id,
-      activo: true
+      estado: true
     },
-    attributes: ['id', 'codigo', 'nombre', 'regional_id', 'activo']
+    attributes: ['id', 'codigo', 'nombre', 'regional_id', 'estado']
   });
 };
 
@@ -228,7 +228,7 @@ export const findCentroByNombreAndRegionalExcludingIdRepository = async (nombre,
         [Op.ne]: idExcluir
       }
     },
-    attributes: ['id', 'codigo', 'nombre', 'regional_id', 'activo']
+    attributes: ['id', 'codigo', 'nombre', 'regional_id', 'estado']
   });
 };
 

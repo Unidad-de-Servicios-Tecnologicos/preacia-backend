@@ -2,6 +2,7 @@ import Usuario from './usuario.model.js';
 import Rol from './rol.model.js';
 import Permiso from './permiso.model.js';
 import UsuarioPermiso from './usuarioPermiso.model.js';
+import UsuarioRol from './usuarioRol.model.js';
 import RolPermiso from './rolPermiso.model.js';
 import TipoDocumento from './tipoDocumento.model.js';
 import Regional from './regional.model.js';
@@ -9,14 +10,18 @@ import Centro from './centro.model.js';
 
 
 
-// Asociaciones
-Usuario.belongsTo(Rol, {
-  foreignKey: 'rol_id',
-  as: 'rol',
+// Asociaciones Usuario - Rol (N:M)
+Usuario.belongsToMany(Rol, {
+  through: UsuarioRol,
+  foreignKey: 'usuario_id',
+  otherKey: 'rol_id',
+  as: 'roles',
 });
 
-Rol.hasMany(Usuario, {
+Rol.belongsToMany(Usuario, {
+  through: UsuarioRol,
   foreignKey: 'rol_id',
+  otherKey: 'usuario_id',
   as: 'usuarios',
 });
 
@@ -78,6 +83,7 @@ export {
   Rol,
   Permiso,
   UsuarioPermiso,
+  UsuarioRol,
   RolPermiso,
   TipoDocumento,
   Regional,

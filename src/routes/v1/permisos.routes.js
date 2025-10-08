@@ -13,7 +13,7 @@ router.get('/',
         verificarToken,
         verificarCuentaActiva,
         verificarRolOPermiso([
-            RolEnum.ADMINISTRADOR
+            RolEnum.ADMIN
         ], [PermisoEnum.GESTIONAR_PERMISOS])
     ],
     PermisoController.getPermissions
@@ -24,7 +24,7 @@ router.get('/list',
         verificarToken,
         verificarCuentaActiva,
         verificarRolOPermiso([
-            RolEnum.ADMINISTRADOR
+            RolEnum.ADMIN
         ], [PermisoEnum.GESTIONAR_PERMISOS])
     ],
     PermisoController.getListPermissions
@@ -35,8 +35,8 @@ router.get('/:id',
         verificarToken,
         verificarCuentaActiva,
         verificarRolOPermiso([
-            RolEnum.ADMINISTRADOR
-        ], [PermisoEnum.VER_PERMISOS])
+            RolEnum.ADMIN
+        ], [PermisoEnum.GESTIONAR_PERMISOS])
     ],
     idParamValidator,
     PermisoController.showPermission
@@ -48,8 +48,8 @@ router.put('/:id',
         verificarToken,
         verificarCuentaActiva,
         verificarRolOPermiso([
-            RolEnum.ADMINISTRADOR
-        ], [PermisoEnum.EDITAR_PERMISOS])
+            RolEnum.ADMIN
+        ], [PermisoEnum.GESTIONAR_PERMISOS])
     ],
     [...idParamValidator],
     
@@ -61,8 +61,8 @@ router.patch('/:id/estado',
         verificarToken,
         verificarCuentaActiva,
         verificarRolOPermiso([
-            RolEnum.ADMINISTRADOR
-        ], [PermisoEnum.CAMBIAR_ESTADO_PERMISOS])
+            RolEnum.ADMIN
+        ], [PermisoEnum.GESTIONAR_PERMISOS])
     ],
     [...idParamValidator],
     
