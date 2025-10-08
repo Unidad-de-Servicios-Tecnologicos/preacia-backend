@@ -369,6 +369,159 @@ WHERE u.correo = 'pedro.lopez@sena.edu.co' AND r.codigo = 'REG-ATL'
 ON DUPLICATE KEY UPDATE estado = TRUE, updated_at = NOW();
 
 -- =============================================================================
+-- 10. VIGENCIAS DE PRUEBA
+-- =============================================================================
+
+INSERT INTO vigencias (nombre, anio, descripcion, fecha_inicio, fecha_fin, estado_vigencia, estado, created_at, updated_at) VALUES
+('Vigencia 2025-1', 2025, 'Primera vigencia del año 2025', '2025-01-15', '2025-06-30', 'activa', TRUE, NOW(), NOW()),
+('Vigencia 2025-2', 2025, 'Segunda vigencia del año 2025', '2025-07-01', '2025-12-31', 'pendiente', TRUE, NOW(), NOW()),
+('Vigencia 2024-2', 2024, 'Segunda vigencia del año 2024', '2024-07-01', '2024-12-31', 'cerrada', TRUE, NOW(), NOW())
+ON DUPLICATE KEY UPDATE estado_vigencia = VALUES(estado_vigencia), updated_at = NOW();
+
+-- =============================================================================
+-- 11. LISTA DE CHEQUEO (Documentos requeridos)
+-- =============================================================================
+
+INSERT INTO lista_chequeo (nombre_item, descripcion, orden, obligatorio, estado, requiere_fecha_documento, requiere_fecha_vencimiento, created_by, created_at, updated_at) VALUES
+-- Documentos de identidad
+('Copia de Cédula de Ciudadanía', 'Copia legible de la cédula de ciudadanía por ambas caras', 1, TRUE, TRUE, FALSE, FALSE, 1, NOW(), NOW()),
+('Certificado de Antecedentes Judiciales', 'Certificado de antecedentes judiciales expedido por la Policía Nacional', 2, TRUE, TRUE, TRUE, FALSE, 1, NOW(), NOW()),
+('Certificado de Antecedentes Disciplinarios', 'Certificado de antecedentes disciplinarios expedido por la Procuraduría', 3, TRUE, TRUE, TRUE, FALSE, 1, NOW(), NOW()),
+('Certificado de Antecedentes Fiscales', 'Certificado de antecedentes fiscales expedido por la Contraloría', 4, TRUE, TRUE, TRUE, FALSE, 1, NOW(), NOW()),
+
+-- Documentos académicos
+('Diploma de Bachiller', 'Copia del diploma de bachiller autenticada', 5, TRUE, TRUE, TRUE, FALSE, 1, NOW(), NOW()),
+('Acta de Grado Universitario', 'Acta de grado profesional autenticada', 6, FALSE, TRUE, TRUE, FALSE, 1, NOW(), NOW()),
+('Tarjeta Profesional', 'Tarjeta profesional vigente (si aplica)', 7, FALSE, TRUE, TRUE, TRUE, 1, NOW(), NOW()),
+
+-- Documentos laborales
+('Certificados Laborales', 'Certificados laborales que acrediten experiencia mínima requerida', 8, TRUE, TRUE, TRUE, FALSE, 1, NOW(), NOW()),
+('Hoja de Vida', 'Hoja de vida en formato de función pública', 9, TRUE, TRUE, FALSE, FALSE, 1, NOW(), NOW()),
+
+-- Documentos financieros
+('RUT', 'Registro Único Tributario actualizado', 10, TRUE, TRUE, TRUE, FALSE, 1, NOW(), NOW()),
+('Certificación Bancaria', 'Certificación bancaria no mayor a 30 días', 11, TRUE, TRUE, TRUE, FALSE, 1, NOW(), NOW()),
+
+-- Documentos de seguridad social
+('Certificado de Afiliación EPS', 'Certificado de afiliación a EPS vigente', 12, TRUE, TRUE, TRUE, FALSE, 1, NOW(), NOW()),
+('Certificado de Afiliación ARL', 'Certificado de afiliación a ARL vigente', 13, TRUE, TRUE, TRUE, FALSE, 1, NOW(), NOW()),
+('Certificado de Afiliación Pensión', 'Certificado de afiliación a fondo de pensión vigente', 14, TRUE, TRUE, TRUE, FALSE, 1, NOW(), NOW()),
+
+-- Documentos adicionales
+('Libreta Militar', 'Libreta militar (para hombres menores de 50 años)', 15, FALSE, TRUE, FALSE, FALSE, 1, NOW(), NOW()),
+('Certificado de Cursos SENA', 'Certificados de cursos realizados en el SENA', 16, FALSE, TRUE, TRUE, FALSE, 1, NOW(), NOW())
+ON DUPLICATE KEY UPDATE descripcion = VALUES(descripcion), orden = VALUES(orden), updated_at = NOW();
+
+-- =============================================================================
+-- 12. VIGENCIA_LISTA_CHEQUEO (Configurar lista para vigencia activa)
+-- =============================================================================
+
+-- Asignar todos los items de lista de chequeo a la vigencia activa 2025-1
+INSERT INTO vigencia_lista_chequeo (vigencia_id, lista_chequeo_id, estado, created_at)
+SELECT v.id, lc.id, TRUE, NOW()
+FROM vigencias v
+CROSS JOIN lista_chequeo lc
+WHERE v.nombre = 'Vigencia 2025-1'
+ON DUPLICATE KEY UPDATE estado = TRUE;
+
+-- =============================================================================
+-- 13. CONTRATISTAS DE PRUEBA (Instructores/Administrativos SIN autenticación)
+-- =============================================================================
+
+INSERT INTO contratistas (tipo_documento_id, numero_documento, nombre_completo, correo, telefono, centro_id, tipo_contrato, encontrado_en_acia, acia_id, fecha_verificacion_acia, estado, created_at, updated_at) VALUES
+-- Instructores del Centro de Bogotá
+(1, '52123456', 'Laura Stefany Ramírez Castro', 'laura.ramirez@example.com', '3151234567', 6, 'Instructor', FALSE, NULL, NULL, TRUE, NOW(), NOW()),
+(1, '52234567', 'David Felipe Morales Gómez', 'david.morales@example.com', '3152345678', 6, 'Instructor', FALSE, NULL, NULL, TRUE, NOW(), NOW()),
+(1, '52345678', 'Jennifer Alexandra Torres Vega', 'jennifer.torres@example.com', '3153456789', 6, 'Instructor', FALSE, NULL, NULL, TRUE, NOW(), NOW()),
+
+-- Instructores del Centro de Medellín
+(1, '43123456', 'Miguel Ángel Sánchez Rojas', 'miguel.sanchez@example.com', '3161234567', 1, 'Instructor', TRUE, 'ACIA-001', NOW(), TRUE, NOW(), NOW()),
+(1, '43234567', 'Daniela Carolina Herrera López', 'daniela.herrera@example.com', '3162345678', 1, 'Instructor', TRUE, 'ACIA-002', NOW(), TRUE, NOW(), NOW()),
+
+-- Administrativos
+(1, '80123456', 'Roberto Carlos Jiménez Pérez', 'roberto.jimenez@example.com', '3171234567', 6, 'Administrativo', FALSE, NULL, NULL, TRUE, NOW(), NOW()),
+(1, '39123456', 'Claudia Patricia Vargas Ruiz', 'claudia.vargas@example.com', '3181234567', 1, 'Administrativo', FALSE, NULL, NULL, TRUE, NOW(), NOW())
+ON DUPLICATE KEY UPDATE nombre_completo = VALUES(nombre_completo), correo = VALUES(correo), estado = VALUES(estado), updated_at = NOW();
+
+-- =============================================================================
+-- 14. DOCUMENTOS DE PRUEBA
+-- =============================================================================
+
+-- Documentos para Laura Ramírez (52123456) - Centro Bogotá
+INSERT INTO documentos (numero_documento, centro_id, vigencia_id, lista_chequeo_id, ruta_archivo, nombre_archivo_original, mime_type, tamanio_bytes, fecha_documento, fecha_vencimiento, estado, observaciones, version, documento_anterior_id, fecha_carga, fecha_envio_revision, fecha_revision, created_at, updated_at) VALUES
+-- Documentos aprobados
+('52123456', 6, 1, 1, '/uploads/2025/01/52123456_cedula.pdf', 'cedula.pdf', 'application/pdf', 245678, NULL, NULL, 'aprobado', NULL, 1, NULL, '2025-01-20 10:00:00', '2025-01-20 10:01:00', '2025-01-20 15:30:00', NOW(), NOW()),
+('52123456', 6, 1, 2, '/uploads/2025/01/52123456_antecedentes_judiciales.pdf', 'antecedentes_judiciales.pdf', 'application/pdf', 156789, '2025-01-15', NULL, 'aprobado', NULL, 1, NULL, '2025-01-20 10:05:00', '2025-01-20 10:06:00', '2025-01-20 15:35:00', NOW(), NOW()),
+('52123456', 6, 1, 10, '/uploads/2025/01/52123456_rut.pdf', 'rut.pdf', 'application/pdf', 123456, '2025-01-10', NULL, 'aprobado', NULL, 1, NULL, '2025-01-20 10:10:00', '2025-01-20 10:11:00', '2025-01-20 15:40:00', NOW(), NOW()),
+
+-- Documentos pendientes
+('52123456', 6, 1, 5, '/uploads/2025/01/52123456_diploma.pdf', 'diploma_bachiller.pdf', 'application/pdf', 234567, '2018-11-20', NULL, 'pendiente', NULL, 1, NULL, '2025-01-21 09:00:00', NULL, NULL, NOW(), NOW()),
+('52123456', 6, 1, 11, '/uploads/2025/01/52123456_cert_bancaria.pdf', 'certificacion_bancaria.pdf', 'application/pdf', 134567, '2025-01-18', NULL, 'pendiente', NULL, 1, NULL, '2025-01-21 09:05:00', NULL, NULL, NOW(), NOW()),
+
+-- Documentos para Miguel Sánchez (43123456) - Centro Medellín - Todos aprobados
+('43123456', 1, 1, 1, '/uploads/2025/01/43123456_cedula.pdf', 'cedula.pdf', 'application/pdf', 245678, NULL, NULL, 'aprobado', NULL, 1, NULL, '2025-01-18 08:00:00', '2025-01-18 08:01:00', '2025-01-18 14:00:00', NOW(), NOW()),
+('43123456', 1, 1, 2, '/uploads/2025/01/43123456_antec_jud.pdf', 'antecedentes_judiciales.pdf', 'application/pdf', 156789, '2025-01-10', NULL, 'aprobado', NULL, 1, NULL, '2025-01-18 08:05:00', '2025-01-18 08:06:00', '2025-01-18 14:05:00', NOW(), NOW()),
+('43123456', 1, 1, 3, '/uploads/2025/01/43123456_antec_disc.pdf', 'antecedentes_disciplinarios.pdf', 'application/pdf', 167890, '2025-01-10', NULL, 'aprobado', NULL, 1, NULL, '2025-01-18 08:10:00', '2025-01-18 08:11:00', '2025-01-18 14:10:00', NOW(), NOW()),
+('43123456', 1, 1, 10, '/uploads/2025/01/43123456_rut.pdf', 'rut.pdf', 'application/pdf', 123456, '2025-01-05', NULL, 'aprobado', NULL, 1, NULL, '2025-01-18 08:15:00', '2025-01-18 08:16:00', '2025-01-18 14:15:00', NOW(), NOW()),
+
+-- Documento rechazado para David Morales (52234567)
+('52234567', 6, 1, 1, '/uploads/2025/01/52234567_cedula.pdf', 'cedula_borrosa.pdf', 'application/pdf', 145678, NULL, NULL, 'rechazado', 'La imagen de la cédula está borrosa y no se puede leer el número. Por favor cargar una imagen más clara.', 1, NULL, '2025-01-22 11:00:00', '2025-01-22 11:01:00', '2025-01-22 16:00:00', NOW(), NOW())
+ON DUPLICATE KEY UPDATE estado = VALUES(estado), observaciones = VALUES(observaciones), updated_at = NOW();
+
+-- =============================================================================
+-- 15. REVISIONES
+-- =============================================================================
+
+-- Revisiones de Ana Martínez (Revisor - usuario_id: 4) para documentos de Medellín
+INSERT INTO revisiones (documento_id, revisor_id, centro_id, fecha_revision, estado_revision, comentario, tiempo_revision_minutos, created_at) VALUES
+-- Revisiones aprobadas
+((SELECT id FROM documentos WHERE numero_documento = '43123456' AND lista_chequeo_id = 1 LIMIT 1), 4, 1, '2025-01-18 14:00:00', 'aprobado', 'Documento correcto y legible', 5, NOW()),
+((SELECT id FROM documentos WHERE numero_documento = '43123456' AND lista_chequeo_id = 2 LIMIT 1), 4, 1, '2025-01-18 14:05:00', 'aprobado', 'Certificado vigente', 7, NOW()),
+((SELECT id FROM documentos WHERE numero_documento = '43123456' AND lista_chequeo_id = 3 LIMIT 1), 4, 1, '2025-01-18 14:10:00', 'aprobado', 'Certificado vigente', 6, NOW()),
+((SELECT id FROM documentos WHERE numero_documento = '43123456' AND lista_chequeo_id = 10 LIMIT 1), 4, 1, '2025-01-18 14:15:00', 'aprobado', 'RUT actualizado', 4, NOW())
+ON DUPLICATE KEY UPDATE comentario = VALUES(comentario);
+
+-- Revisiones de Carlos Gómez (Admin Centro - usuario_id: 3) para documentos de Bogotá
+INSERT INTO revisiones (documento_id, revisor_id, centro_id, fecha_revision, estado_revision, comentario, tiempo_revision_minutos, created_at) VALUES
+-- Revisiones aprobadas
+((SELECT id FROM documentos WHERE numero_documento = '52123456' AND lista_chequeo_id = 1 LIMIT 1), 3, 6, '2025-01-20 15:30:00', 'aprobado', 'Cédula correcta', 8, NOW()),
+((SELECT id FROM documentos WHERE numero_documento = '52123456' AND lista_chequeo_id = 2 LIMIT 1), 3, 6, '2025-01-20 15:35:00', 'aprobado', 'Certificado vigente', 6, NOW()),
+((SELECT id FROM documentos WHERE numero_documento = '52123456' AND lista_chequeo_id = 10 LIMIT 1), 3, 6, '2025-01-20 15:40:00', 'aprobado', 'RUT actualizado correctamente', 5, NOW()),
+
+-- Revisión rechazada
+((SELECT id FROM documentos WHERE numero_documento = '52234567' AND lista_chequeo_id = 1 LIMIT 1), 3, 6, '2025-01-22 16:00:00', 'rechazado', 'Imagen borrosa, debe cargar un documento más claro', 10, NOW())
+ON DUPLICATE KEY UPDATE comentario = VALUES(comentario);
+
+-- =============================================================================
+-- 16. PERMISOS ESPECIALES DE CARGA
+-- =============================================================================
+
+-- Permiso especial para Laura Ramírez (52123456) que se retrasó
+INSERT INTO permisos_especiales_carga (numero_documento, vigencia_id, centro_id, es_permiso_masivo, fecha_inicio, fecha_fin, justificacion, otorgado_por_id, revocado, fecha_revocacion, revocado_por_id, motivo_revocacion, created_at, updated_at) VALUES
+('52123456', 1, 6, FALSE, '2025-02-01', '2025-02-10', 'Permiso especial por incapacidad médica. El instructor estuvo hospitalizado durante las fechas regulares de carga.', 3, FALSE, NULL, NULL, NULL, NOW(), NOW())
+ON DUPLICATE KEY UPDATE justificacion = VALUES(justificacion), updated_at = NOW();
+
+-- Permiso masivo para todo el Centro de Barranquilla por problemas técnicos
+INSERT INTO permisos_especiales_carga (numero_documento, vigencia_id, centro_id, es_permiso_masivo, fecha_inicio, fecha_fin, justificacion, otorgado_por_id, revocado, fecha_revocacion, revocado_por_id, motivo_revocacion, created_at, updated_at) VALUES
+(NULL, 1, 7, TRUE, '2025-02-05', '2025-02-15', 'Permiso masivo por falla en el sistema de la regional durante 3 días consecutivos', 1, FALSE, NULL, NULL, NULL, NOW(), NOW())
+ON DUPLICATE KEY UPDATE justificacion = VALUES(justificacion), updated_at = NOW();
+
+-- =============================================================================
+-- 17. AUDITORÍA DE PRUEBA
+-- =============================================================================
+
+INSERT INTO auditoria (usuario_id, numero_documento, accion, entidad_afectada, entidad_id, datos_anteriores, datos_nuevos, ip_address, user_agent, centro_id, created_at) VALUES
+-- Acciones de usuarios administrativos
+(1, NULL, 'CREATE', 'vigencias', 1, NULL, JSON_OBJECT('nombre', 'Vigencia 2025-1', 'estado_vigencia', 'activa'), '192.168.1.100', 'Mozilla/5.0', NULL, '2025-01-10 09:00:00'),
+(3, NULL, 'REVISION_APROBADA', 'documentos', 1, NULL, JSON_OBJECT('estado', 'aprobado', 'documento_id', 1), '192.168.1.105', 'Mozilla/5.0', 6, '2025-01-20 15:30:00'),
+(3, NULL, 'REVISION_RECHAZADA', 'documentos', 9, NULL, JSON_OBJECT('estado', 'rechazado', 'documento_id', 9, 'motivo', 'Imagen borrosa'), '192.168.1.105', 'Mozilla/5.0', 6, '2025-01-22 16:00:00'),
+
+-- Acciones de instructores (sin usuario_id)
+(NULL, '52123456', 'CARGA_DOCUMENTO', 'documentos', 1, NULL, JSON_OBJECT('lista_chequeo_id', 1, 'nombre_archivo', 'cedula.pdf'), '190.147.23.45', 'Mozilla/5.0', 6, '2025-01-20 10:00:00'),
+(NULL, '43123456', 'CARGA_DOCUMENTO', 'documentos', 5, NULL, JSON_OBJECT('lista_chequeo_id', 1, 'nombre_archivo', 'cedula.pdf'), '181.56.23.67', 'Mozilla/5.0', 1, '2025-01-18 08:00:00')
+ON DUPLICATE KEY UPDATE created_at = VALUES(created_at);
+
+-- =============================================================================
 -- RESUMEN DE DATOS INSERTADOS
 -- =============================================================================
 
@@ -382,28 +535,79 @@ UNION ALL SELECT 'Centros', COUNT(*) FROM centros
 UNION ALL SELECT 'Roles', COUNT(*) FROM roles
 UNION ALL SELECT 'Permisos', COUNT(*) FROM permisos
 UNION ALL SELECT 'Asignaciones Rol-Permiso', COUNT(*) FROM rol_permiso
-UNION ALL SELECT 'Usuarios', COUNT(*) FROM usuarios
+UNION ALL SELECT 'Usuarios Administrativos', COUNT(*) FROM usuarios
 UNION ALL SELECT 'Asignaciones Usuario-Rol', COUNT(*) FROM usuario_rol WHERE estado = TRUE
-UNION ALL SELECT 'Asignaciones Usuario-Centro', COUNT(*) FROM usuario_centro WHERE estado = TRUE;
+UNION ALL SELECT 'Asignaciones Usuario-Centro', COUNT(*) FROM usuario_centro WHERE estado = TRUE
+UNION ALL SELECT 'Vigencias', COUNT(*) FROM vigencias
+UNION ALL SELECT 'Items Lista de Chequeo', COUNT(*) FROM lista_chequeo
+UNION ALL SELECT 'Contratistas', COUNT(*) FROM contratistas
+UNION ALL SELECT 'Documentos Cargados', COUNT(*) FROM documentos
+UNION ALL SELECT 'Revisiones', COUNT(*) FROM revisiones
+UNION ALL SELECT 'Permisos Especiales', COUNT(*) FROM permisos_especiales_carga
+UNION ALL SELECT 'Registros de Auditoría', COUNT(*) FROM auditoria;
 
 SELECT '' as '';
 SELECT '========================================' as '';
-SELECT 'USUARIOS DE PRUEBA' as '';
+SELECT 'USUARIOS ADMINISTRATIVOS DE PRUEBA' as '';
 SELECT 'Contraseña para todos: Admin123!' as '';
 SELECT '========================================' as '';
 
 SELECT 
     u.correo as usuario,
     u.documento,
-    GROUP_CONCAT(r.nombre ORDER BY r.nombre SEPARATOR ', ') as roles,
-    COUNT(DISTINCT uc.centro_id) as centros_asignados
+    CONCAT(u.nombres, ' ', COALESCE(u.apellidos, '')) as nombre_completo,
+    GROUP_CONCAT(DISTINCT r.nombre ORDER BY r.nombre SEPARATOR ', ') as roles,
+    COUNT(DISTINCT uc.centro_id) as centros_asignados,
+    reg.nombre as regional
 FROM usuarios u
 LEFT JOIN usuario_rol ur ON u.id = ur.usuario_id AND ur.estado = TRUE
 LEFT JOIN roles r ON ur.rol_id = r.id
 LEFT JOIN usuario_centro uc ON u.id = uc.usuario_id AND uc.estado = TRUE
-GROUP BY u.id, u.correo, u.documento
+LEFT JOIN regionales reg ON u.regional_id = reg.id
+GROUP BY u.id, u.correo, u.documento, u.nombres, u.apellidos, reg.nombre
 ORDER BY u.id;
 
 SELECT '' as '';
+SELECT '========================================' as '';
+SELECT 'ESTADO DE DOCUMENTOS POR INSTRUCTOR' as '';
+SELECT '========================================' as '';
+
+SELECT 
+    c.numero_documento,
+    c.nombre_completo,
+    cen.nombre as centro,
+    COUNT(DISTINCT d.id) as total_documentos,
+    SUM(CASE WHEN d.estado = 'aprobado' THEN 1 ELSE 0 END) as aprobados,
+    SUM(CASE WHEN d.estado = 'rechazado' THEN 1 ELSE 0 END) as rechazados,
+    SUM(CASE WHEN d.estado = 'pendiente' THEN 1 ELSE 0 END) as pendientes,
+    ROUND((SUM(CASE WHEN d.estado = 'aprobado' THEN 1 ELSE 0 END) / COUNT(DISTINCT d.id)) * 100, 2) as porcentaje_completado
+FROM contratistas c
+LEFT JOIN documentos d ON c.numero_documento = d.numero_documento
+LEFT JOIN centros cen ON c.centro_id = cen.id
+GROUP BY c.numero_documento, c.nombre_completo, cen.nombre
+ORDER BY porcentaje_completado DESC;
+
+SELECT '' as '';
+SELECT '========================================' as '';
+SELECT 'ESTADÍSTICAS POR CENTRO' as '';
+SELECT '========================================' as '';
+
+SELECT 
+    cen.nombre as centro,
+    reg.nombre as regional,
+    COUNT(DISTINCT c.id) as total_contratistas,
+    COUNT(DISTINCT d.id) as total_documentos_cargados,
+    SUM(CASE WHEN d.estado = 'aprobado' THEN 1 ELSE 0 END) as documentos_aprobados,
+    SUM(CASE WHEN d.estado = 'pendiente' THEN 1 ELSE 0 END) as documentos_pendientes
+FROM centros cen
+LEFT JOIN regionales reg ON cen.regional_id = reg.id
+LEFT JOIN contratistas c ON cen.id = c.centro_id AND c.estado = TRUE
+LEFT JOIN documentos d ON c.numero_documento = d.numero_documento
+WHERE cen.id IN (1, 6, 7) -- Centros con datos de prueba
+GROUP BY cen.id, cen.nombre, reg.nombre
+ORDER BY total_documentos_cargados DESC;
+
+SELECT '' as '';
 SELECT '✓ Datos insertados exitosamente!' as '';
+SELECT '✓ Sistema listo para pruebas' as '';
 

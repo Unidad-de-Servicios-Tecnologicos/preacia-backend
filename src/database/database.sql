@@ -51,15 +51,15 @@ CREATE TABLE IF NOT EXISTS centros (
 -- Tabla: vigencias
 -- Descripción: Periodos/vigencias para carga de documentos
 CREATE TABLE IF NOT EXISTS vigencias (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+      id INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(150) NOT NULL COMMENT 'Ej: Vigencia 2025-1',
     anio INT NOT NULL COMMENT 'Año de la vigencia',
     descripcion TEXT COMMENT 'Descripción de la vigencia',
     fecha_inicio DATE NOT NULL COMMENT 'Fecha inicio de carga',
     fecha_fin DATE NOT NULL COMMENT 'Fecha fin de carga',
     estado_vigencia ENUM('pendiente', 'activa', 'cerrada') DEFAULT 'pendiente' COMMENT 'Estado de la vigencia',
-    estado BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      estado BOOLEAN DEFAULT TRUE,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY unique_nombre_anio (nombre, anio),
     INDEX idx_estado_vigencia (estado_vigencia),
@@ -73,19 +73,19 @@ CREATE TABLE IF NOT EXISTS vigencias (
 -- =============================================================================
 
 -- Tabla: tipo_documentos
-CREATE TABLE IF NOT EXISTS tipo_documentos (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+  CREATE TABLE IF NOT EXISTS tipo_documentos (
+      id INT AUTO_INCREMENT PRIMARY KEY,
     codigo VARCHAR(10) NOT NULL UNIQUE COMMENT 'CC, CE, NIT',
     nombre VARCHAR(100) NOT NULL UNIQUE COMMENT 'Cédula de Ciudadanía, etc',
-    estado BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      estado BOOLEAN NOT NULL DEFAULT TRUE,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_estado (estado)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Tipos de documento';
 
 -- Tabla: roles
 -- Descripción: Roles administrativos (revisor, admin_centro, director_regional, admin)
-CREATE TABLE IF NOT EXISTS roles (
+  CREATE TABLE IF NOT EXISTS roles (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(50) NOT NULL UNIQUE COMMENT 'revisor, administrador_centro, director_regional, admin',
     descripcion VARCHAR(500),
@@ -96,22 +96,22 @@ CREATE TABLE IF NOT EXISTS roles (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Roles administrativos';
 
 -- Tabla: permisos
-CREATE TABLE IF NOT EXISTS permisos (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL UNIQUE,
-    descripcion VARCHAR(500),
-    estado BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CREATE TABLE IF NOT EXISTS permisos (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      nombre VARCHAR(100) NOT NULL UNIQUE,
+      descripcion VARCHAR(500),
+      estado BOOLEAN DEFAULT TRUE,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_estado (estado)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Permisos del sistema';
 
 -- Tabla: usuarios (SOLO ADMINISTRATIVOS)
 -- Descripción: Usuarios con autenticación (NO incluye instructores/administrativos)
-CREATE TABLE IF NOT EXISTS usuarios (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+  CREATE TABLE IF NOT EXISTS usuarios (
+      id INT AUTO_INCREMENT PRIMARY KEY,
     regional_id INT NULL COMMENT 'Regional asignada (obligatorio para director_regional)',
-    tipo_documento_id INT NOT NULL,
+      tipo_documento_id INT NOT NULL,
     documento VARCHAR(20) NOT NULL UNIQUE COMMENT 'Número de documento',
     nombres VARCHAR(150) NOT NULL,
     apellidos VARCHAR(150),
@@ -119,17 +119,17 @@ CREATE TABLE IF NOT EXISTS usuarios (
     telefono VARCHAR(20), 
     direccion VARCHAR(200),
     contrasena VARCHAR(255) NOT NULL COMMENT 'Password encriptado con bcrypt',
-    estado BOOLEAN NOT NULL DEFAULT TRUE,
-    ultimo_acceso TIMESTAMP NULL,
+      estado BOOLEAN NOT NULL DEFAULT TRUE,
+      ultimo_acceso TIMESTAMP NULL,
     intentos_fallidos INT DEFAULT 0,
     bloqueado_hasta TIMESTAMP NULL,
     ultimo_cambio_password TIMESTAMP NULL,
     password_debe_cambiar BOOLEAN DEFAULT FALSE COMMENT 'Cambio obligatorio en primer login',
-    reset_token VARCHAR(255),
-    reset_token_expires TIMESTAMP NULL,
+      reset_token VARCHAR(255),
+      reset_token_expires TIMESTAMP NULL,
     created_by INT NULL COMMENT 'Usuario que creó este usuario',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (regional_id) REFERENCES regionales(id) ON DELETE RESTRICT,
     FOREIGN KEY (tipo_documento_id) REFERENCES tipo_documentos(id) ON DELETE RESTRICT,
     FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
@@ -140,7 +140,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Usuarios administrativos con autenticación';
 
 -- Tabla: rol_permiso
-CREATE TABLE IF NOT EXISTS rol_permiso (
+  CREATE TABLE IF NOT EXISTS rol_permiso (
     rol_id INT NOT NULL,
     permiso_id INT NOT NULL,
     PRIMARY KEY (rol_id, permiso_id),
@@ -165,7 +165,7 @@ CREATE TABLE IF NOT EXISTS usuario_rol (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Roles asignados a usuarios';
 
 -- Tabla: usuario_permiso
-CREATE TABLE IF NOT EXISTS usuario_permiso (
+  CREATE TABLE IF NOT EXISTS usuario_permiso (
     usuario_id INT NOT NULL,
     permiso_id INT NOT NULL,
     PRIMARY KEY (usuario_id, permiso_id),
@@ -338,10 +338,10 @@ CREATE TABLE IF NOT EXISTS revisiones (
 -- Tabla: permisos_especiales_carga
 -- Descripción: Permisos para cargar fuera de fechas de vigencia
 CREATE TABLE IF NOT EXISTS permisos_especiales_carga (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+      id INT AUTO_INCREMENT PRIMARY KEY,
     numero_documento VARCHAR(20) NULL COMMENT 'Instructor específico (NULL si es masivo)',
     vigencia_id INT NOT NULL,
-    centro_id INT NOT NULL,
+      centro_id INT NOT NULL,
     es_permiso_masivo BOOLEAN DEFAULT FALSE COMMENT 'Si aplica a todo el centro',
     fecha_inicio DATE NOT NULL COMMENT 'Inicio del permiso',
     fecha_fin DATE NOT NULL COMMENT 'Fin del permiso',

@@ -4,6 +4,7 @@ import Usuario from "../models/usuario.model.js";
 import Rol from "../models/rol.model.js";
 import Permiso from "../models/permiso.model.js";
 import { successResponse, errorResponse } from "../utils/response.util.js";
+import { RolEnum } from "../enums/rol.enum.js";
 
 dotenv.config();
 
@@ -27,9 +28,9 @@ const verificarCuentaActiva = async (req, res, next) => {
 
 /**
  * Middleware para verificar si el usuario tiene al menos uno de los roles o permisos requeridos.
- * Si se pasa al menos un rol o permiso, el usuario debe cumplir con alguno de ellos.
- * @param {Array<string>} rolesPermitidos - Nombres de roles permitidos.
- * @param {Array<string>} permisosRequeridos - Nombres de permisos permitidos.
+ * Soporta usuarios con múltiples roles.
+ * @param {Array<string>} rolesPermitidos - Nombres de roles permitidos (usando RolEnum).
+ * @param {Array<string>} permisosRequeridos - Nombres de permisos permitidos (usando PermisoEnum).
  */
 const verificarRolOPermiso = (rolesPermitidos = [], permisosRequeridos = []) => {
   return async (req, res, next) => {
@@ -37,83 +38,85 @@ const verificarRolOPermiso = (rolesPermitidos = [], permisosRequeridos = []) => 
       return errorResponse(res, "Usuario no autenticado", 401);
     }
 
-    // Trae el usuario con su rol y permisos directos y por rol
+    // Traer el usuario con TODOS sus roles y permisos
     const usuario = await Usuario.findByPk(req.usuario.id, {
       include: [
         {
           model: Rol,
-          as: 'rol',
-          attributes: ['nombre'],
+          as: 'roles', // Ahora es roles (plural) porque un usuario puede tener múltiples
+          attributes: ['id', 'nombre'],
+          through: { 
+            attributes: [],
+            where: { estado: true } // Solo roles activos
+          },
           include: [
             {
               model: Permiso,
               as: 'permisos',
-              attributes: ['nombre']
+              attributes: ['nombre'],
+              through: { attributes: [] }
             }
           ]
         },
         {
           model: Permiso,
-          as: 'permisos',
+          as: 'permisos', // Permisos directos del usuario
           attributes: ['nombre'],
           through: { attributes: [] }
         }
       ]
     });
 
-    if (!usuario || !usuario.rol) {
-      return errorResponse(res, "Rol no asignado o usuario no encontrado.", 403);
+    if (!usuario) {
+      return errorResponse(res, "Usuario no encontrado.", 403);
     }
 
-    // SUPERADMINISTRADOR: acceso total
-    if (usuario.rol.nombre === 'SuperAdministrador') {
+    if (!usuario.roles || usuario.roles.length === 0) {
+      return errorResponse(res, "No tienes roles asignados.", 403);
+    }
+
+    // Obtener todos los nombres de roles del usuario
+    const rolesUsuario = usuario.roles.map(r => r.nombre);
+
+    // ADMIN: Acceso total a todo el sistema
+    if (rolesUsuario.includes(RolEnum.ADMIN)) {
       return next();
     }
 
-    // ADMINISTRADOR: solo puede ver permisos, supervisores, usuarios, roles y dashboard
-    if (usuario.rol.nombre === 'Administrador') {
-      const permisosAdmin = [
-        'gestionar_permisos',
-        'gestionar_supervisores',
-        'gestionar_usuarios',
-        'gestionar_roles',
-        'ver_dashboard'
-      ];
-      const permisosPorRol = usuario.rol.permisos ? usuario.rol.permisos.map(p => p.nombre) : [];
-      const permisosDirectos = usuario.permisos ? usuario.permisos.map(p => p.nombre) : [];
-      const permisosUsuario = Array.from(new Set([...permisosPorRol, ...permisosDirectos]));
-      const tienePermisoAdmin = permisosAdmin.some(permiso => permisosUsuario.includes(permiso));
-      if (!tienePermisoAdmin) {
-        return errorResponse(res, "Acceso denegado. Solo puedes acceder a permisos, supervisores, usuarios, roles y dashboard.", 403);
+    // Verificar si el usuario tiene alguno de los roles permitidos
+    const tieneRolPermitido = rolesPermitidos.length === 0 || 
+                              rolesPermitidos.some(rol => rolesUsuario.includes(rol));
+
+    // Combinar todos los permisos (de todos los roles + permisos directos)
+    const permisosMap = new Map();
+
+    // Agregar permisos directos del usuario
+    if (usuario.permisos) {
+      usuario.permisos.forEach(permiso => {
+        permisosMap.set(permiso.nombre, true);
+      });
+    }
+
+    // Agregar permisos de todos los roles
+    usuario.roles.forEach(rol => {
+      if (rol.permisos) {
+        rol.permisos.forEach(permiso => {
+          permisosMap.set(permiso.nombre, true);
+        });
       }
-      return next();
+    });
+
+    const permisosUsuario = Array.from(permisosMap.keys());
+
+    // Verificar si el usuario tiene alguno de los permisos requeridos
+    const tienePermisoRequerido = permisosRequeridos.length === 0 || 
+                                  permisosRequeridos.some(permiso => permisosUsuario.includes(permiso));
+
+    // El usuario debe tener al menos un rol permitido O un permiso requerido
+    if (!tieneRolPermitido && !tienePermisoRequerido) {
+      return errorResponse(res, "Acceso denegado. No tienes los permisos suficientes para realizar esta acción.", 403);
     }
 
-    // USUARIO: solo puede ver dashboard y cuenta
-    if (usuario.rol.nombre === 'Usuario') {
-      const permisosUsuarioPermitidos = [
-        'ver_dashboard',
-        'gestionar_cuenta'
-      ];
-      const permisosPorRol = usuario.rol.permisos ? usuario.rol.permisos.map(p => p.nombre) : [];
-      const permisosDirectos = usuario.permisos ? usuario.permisos.map(p => p.nombre) : [];
-      const permisosUsuario = Array.from(new Set([...permisosPorRol, ...permisosDirectos]));
-      const tienePermisoUsuario = permisosUsuarioPermitidos.some(permiso => permisosUsuario.includes(permiso));
-      if (!tienePermisoUsuario) {
-        return errorResponse(res, "Acceso denegado. Solo puedes acceder a dashboard y cuenta.", 403);
-      }
-      return next();
-    }
-
-    // Otros roles: lógica estándar
-    const tieneRol = rolesPermitidos.length === 0 || rolesPermitidos.includes(usuario.rol.nombre);
-    const permisosPorRol = usuario.rol.permisos ? usuario.rol.permisos.map(p => p.nombre) : [];
-    const permisosDirectos = usuario.permisos ? usuario.permisos.map(p => p.nombre) : [];
-    const permisosUsuario = Array.from(new Set([...permisosPorRol, ...permisosDirectos]));
-    const tienePermiso = permisosRequeridos.length === 0 || permisosRequeridos.some(permiso => permisosUsuario.includes(permiso));
-    if (!tieneRol && !tienePermiso) {
-      return errorResponse(res, "Acceso denegado. No tienes permisos suficientes", 403);
-    }
     next();
   };
 };

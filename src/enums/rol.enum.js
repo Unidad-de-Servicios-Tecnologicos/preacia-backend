@@ -7,4 +7,4 @@ export const RolEnum = Object.freeze({
     ADMINISTRADOR_CENTRO: "administrador_centro",
     DIRECTOR_REGIONAL: "director_regional",
     ADMIN: "admin",
-  });
+});

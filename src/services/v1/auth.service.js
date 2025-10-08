@@ -17,63 +17,59 @@ import { hashPassword } from '../../utils/global.util.js';
 import bcrypt from "bcrypt";
 import { findUsuarioById } from "../../repositories/usuario.repository.js";
 import { generateAccessToken } from '../../utils/global.util.js';
+import { generateSecurePassword } from '../../utils/random.util.js';
 
 export const registerUserService = async (data) => {
-    const { contrasena, rol_nombre, tipo_documento } = data;
+    const { rol_ids, tipo_documento_id, regional_id, centro_ids } = data;
 
-    let rolUsuario;
+    // Validación: tipo_documento_id es obligatorio y ya fue validado por el validator
+    // Validación: rol_ids es obligatorio y ya fue validado por el validator
+    // Validación: centro_ids y regional_id ya fueron validados según los roles
+    
+    // NOTA: Las validaciones de negocio ya se hicieron en el validator usando RolEnum
+    // Aquí solo ejecutamos la lógica de creación
 
-    // Si se especifica un rol, buscarlo por nombre
-    if (rol_nombre && rol_nombre.trim() !== '') {
-        rolUsuario = await getRoleByNameRepository(rol_nombre.trim());
-        if (!rolUsuario) {
-            const error = new Error(`No se encontró el rol "${rol_nombre}".`);
-            error.status = 400;
-            throw error;
-        }
-    } else {
-        // Si no se especifica rol, usar el rol por defecto
-        rolUsuario = await getRoleByNameRepository(RolEnum.USUARIO);
-        if (!rolUsuario) {
-            const error = new Error('No se encontró el rol por defecto para usuarios.');
-            error.status = 500;
-            throw error;
-        }
-    }
+    // Generar una contraseña segura automáticamente
+    const generatedPassword = generateSecurePassword(12);
+    const hashedPassword = await encriptPassword(generatedPassword, 10);
 
-    // Buscar el tipo de documento por nombre y obtener su ID
-    let tipoDocumentoId = null;
-    if (tipo_documento && tipo_documento.trim() !== '') {
-        const tipoDocumento = await findTipoDocumentoByNombreRepository(tipo_documento.trim());
-        if (!tipoDocumento) {
-            const error = new Error(`No se encontró el tipo de documento "${tipo_documento}".`);
-            error.status = 400;
-            throw error;
-        }
-        tipoDocumentoId = tipoDocumento.id;
-    } else {
-        const error = new Error('El tipo de documento es requerido.');
-        error.status = 400;
-        throw error;
-    }
-
-    // Encripta la contraseña y genera el código
-    const hashedPassword = await encriptPassword(contrasena, 10);
-
-    // Preparar los datos del usuario con el tipo_documento_id
+    // Preparar los datos del usuario
     const userData = {
         ...data,
-        tipo_documento_id: tipoDocumentoId
+        tipo_documento_id,
+        regional_id: regional_id || null,
+        password_debe_cambiar: true // El usuario debe cambiar la contraseña en el primer login
     };
 
-    // Crea el usuario con el rol asignado
-    const usuario = await createUser(userData, hashedPassword, [rolUsuario.id]);
+    // Crea el usuario con TODOS los roles asignados (estado activo desde el inicio)
+    const usuario = await createUser(userData, hashedPassword, rol_ids, true);
+
+    // Si se proporcionaron centros, asociar el usuario con los centros
+    if (centro_ids && Array.isArray(centro_ids) && centro_ids.length > 0) {
+        for (const centroId of centro_ids) {
+            await usuario.addCentro(centroId, {
+                through: { estado: true }
+            });
+        }
+    }
+
+    // Enviar correo con las credenciales
+    try {
+        await sendPasswordCredentialsEmail({
+            nombres: usuario.nombres,
+            correo: usuario.correo
+        }, generatedPassword);
+    } catch (emailError) {
+        console.error('Error al enviar correo de credenciales:', emailError);
+        // No lanzamos error aquí, el usuario fue creado exitosamente
+        // Solo registramos el error del correo
+    }
 
     // Obtener usuario con roles cargados
     const usuarioCreado = await findUsuarioById(usuario.id);
 
     return {
-        message: 'Usuario registrado correctamente. Debe esperar la verificación de su cuenta por parte de un administrador del sistema.',
+        message: 'Usuario registrado correctamente. Se ha enviado un correo electrónico con las credenciales de acceso. Ya puedes iniciar sesión en el sistema.',
         usuario: {
             id: usuarioCreado.id,
             documento: usuarioCreado.documento,
@@ -83,9 +79,15 @@ export const registerUserService = async (data) => {
             telefono: usuarioCreado.telefono,
             direccion: usuarioCreado.direccion,
             estado: usuarioCreado.estado,
+            password_debe_cambiar: usuarioCreado.password_debe_cambiar,
             roles: usuarioCreado.roles ? usuarioCreado.roles.map(r => ({
                 id: r.id,
                 nombre: r.nombre
+            })) : [],
+            centros: usuarioCreado.centros ? usuarioCreado.centros.map(c => ({
+                id: c.id,
+                codigo: c.codigo,
+                nombre: c.nombre
             })) : []
         }
     };
@@ -380,7 +382,7 @@ export const createUserWithEmailSetupService = async (data) => {
         }
     } else {
         // Si no se especifica rol, usar el rol por defecto
-        rolUsuario = await getRoleByNameRepository(RolEnum.USUARIO);
+        rolUsuario = await getRoleByNameRepository(RolEnum.REVISOR);
         if (!rolUsuario) {
             const error = new Error('No se encontró el rol por defecto para usuarios.');
             error.status = 500;

@@ -18,7 +18,10 @@ export const createUser = async (data, hashedPassword, roleIds = [], estado = fa
         apellidos,
         correo,
         telefono,
-        direccion
+        direccion,
+        regional_id,
+        password_debe_cambiar,
+        created_by
     } = data;
 
     const usuario = await Usuario.create({
@@ -29,8 +32,11 @@ export const createUser = async (data, hashedPassword, roleIds = [], estado = fa
         correo,
         telefono,
         direccion,
+        regional_id,
         contrasena: hashedPassword,
-        estado
+        estado,
+        password_debe_cambiar: password_debe_cambiar !== undefined ? password_debe_cambiar : false,
+        created_by: created_by || null
     });
 
     // Asignar roles al usuario

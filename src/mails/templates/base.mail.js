@@ -74,29 +74,42 @@ export const sendResetPassword = async (usuario, resetLink) => {
  */
 export const sendPasswordCredentialsEmail = async (usuario, password) => {
     const html = baseEmailTemplate({
-        title: "Credenciales de acceso",
+        title: "Credenciales de acceso - Sistema PRE-ACIA SENA",
         content: `
-            <p>Hola ${usuario.nombre},</p>
-            <p>Tu cuenta ha sido creada exitosamente. A continuación, encontrarás tus credenciales de acceso al sistema:</p>
+            <p style="font-size: 16px; color: #374151;">Hola ${usuario.nombres},</p>
+            <p style="font-size: 14px; color: #6b7280;">Tu cuenta ha sido creada exitosamente en el Sistema Nacional de Gestión de Listas de Chequeo Precontractuales. A continuación, encontrarás tus credenciales de acceso:</p>
             
-            <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; padding: 16px; margin: 16px 0;">
-                <p style="margin: 0; font-weight: bold;">Correo electrónico:</p>
-                <p style="margin: 4px 0 12px 0; font-family: monospace; background-color: #ffffff; padding: 8px; border-radius: 4px;">${usuario.correo}</p>
+            <div style="background-color: #f9fafb; border: 2px solid #39A900; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                <p style="margin: 0 0 8px 0; font-weight: bold; color: #1a202c; font-size: 14px;">📧 Correo electrónico:</p>
+                <p style="margin: 0 0 16px 0; font-family: 'Courier New', monospace; background-color: #ffffff; padding: 12px; border-radius: 6px; font-size: 16px; color: #1f2937; border: 1px solid #e5e7eb;">${usuario.correo}</p>
                 
-                <p style="margin: 0; font-weight: bold;">Contraseña:</p>
-                <p style="margin: 4px 0 0 0; font-family: monospace; background-color: #ffffff; padding: 8px; border-radius: 4px;">${password}</p>
+                <p style="margin: 0 0 8px 0; font-weight: bold; color: #1a202c; font-size: 14px;">🔒 Contraseña temporal:</p>
+                <p style="margin: 0; font-family: 'Courier New', monospace; background-color: #ffffff; padding: 12px; border-radius: 6px; font-size: 16px; color: #1f2937; border: 1px solid #e5e7eb; font-weight: bold;">${password}</p>
             </div>
             
-            <p><strong>Importante:</strong> Por razones de seguridad, te recomendamos cambiar tu contraseña después del primer inicio de sesión.</p>
+            <div style="background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 12px 16px; margin: 20px 0; border-radius: 4px;">
+                <p style="margin: 0; font-size: 14px; color: #92400e;"><strong>⚠️ Importante:</strong> Por razones de seguridad, deberás cambiar tu contraseña después del primer inicio de sesión.</p>
+            </div>
             
-            <p>Puedes acceder al sistema haciendo clic en el siguiente enlace:</p>
-            <a href="${process.env.FRONTEND_URL}/ingresar" style="display:inline-block;padding:12px 24px;background-color:#39A900;color:#fff;text-decoration:none;border-radius:6px;font-weight:bold;">Iniciar sesión</a>
+            <div style="background-color: #d1fae5; border-left: 4px solid #10b981; padding: 12px 16px; margin: 20px 0; border-radius: 4px;">
+                <p style="margin: 0; font-size: 14px; color: #065f46;"><strong>✅ ¡Listo!</strong> Tu cuenta ya está activa y puedes iniciar sesión inmediatamente usando las credenciales proporcionadas.</p>
+            </div>
+            
+            <p style="text-align: center; margin: 24px 0;">
+                <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/ingresar" style="display:inline-block;padding:14px 32px;background-color:#39A900;color:#ffffff;text-decoration:none;border-radius:8px;font-weight:bold;font-size:16px;box-shadow: 0 2px 4px rgba(0,0,0,0.1);">Iniciar sesión</a>
+            </p>
+        `,
+        footer: `
+            <p style="color: #6b7280; font-size: 12px; margin: 0; line-height: 1.5;">
+                Este es un correo automático del Sistema PRE-ACIA SENA, por favor no responda a este mensaje.<br>
+                Si tienes alguna pregunta, contacta al administrador del sistema.
+            </p>
         `
     });
 
     await sendMail({
         to: usuario.correo,
-        subject: "Bienvenido al sistema - Credenciales de acceso",
+        subject: "Bienvenido al Sistema PRE-ACIA SENA - Credenciales de acceso",
         html
     });
 };
