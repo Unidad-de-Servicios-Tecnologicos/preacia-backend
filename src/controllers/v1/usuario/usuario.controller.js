@@ -83,10 +83,28 @@ export const storeUsuario = async (req, res) => {
             ]);
         }
 
-        if (error.message.includes("rol")) {
+        if (error.message.includes("rol") || error.message.includes("Debe especificar")) {
             return errorResponse(res, error.message, 400, [
                 {
                     code: "INVALID_ROL",
+                    detail: error.message,
+                },
+            ]);
+        }
+
+        if (error.message.includes("regional")) {
+            return errorResponse(res, error.message, 400, [
+                {
+                    code: "INVALID_REGIONAL",
+                    detail: error.message,
+                },
+            ]);
+        }
+
+        if (error.message.includes("centro")) {
+            return errorResponse(res, error.message, 400, [
+                {
+                    code: "INVALID_CENTRO",
                     detail: error.message,
                 },
             ]);
@@ -175,7 +193,8 @@ export const updateUsuario = async (req, res) => {
             ]);
         }
 
-        if (error.message.includes("rol") || error.message.includes("tipo de documento")) {
+        if (error.message.includes("rol") || error.message.includes("tipo de documento") || 
+            error.message.includes("centro") || error.message.includes("regional")) {
             return errorResponse(res, error.message, 400, [
                 {
                     code: "INVALID_DATA",

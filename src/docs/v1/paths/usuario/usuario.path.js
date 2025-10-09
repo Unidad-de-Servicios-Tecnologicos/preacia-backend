@@ -151,7 +151,7 @@ export const usuarioPaths = {
         post: {
             tags: ['Usuario'],
             summary: 'Crear un nuevo usuario',
-            description: 'Crea un nuevo usuario en el sistema',
+            description: 'Crea un nuevo usuario en el sistema. La contraseña es opcional y se generará automáticamente si no se proporciona. Los campos centro_ids y regional_id son obligatorios según el rol asignado.',
             security: [{ bearerAuth: [] }],
             requestBody: {
                 required: true,
@@ -159,6 +159,49 @@ export const usuarioPaths = {
                     'application/json': {
                         schema: {
                             $ref: '#/components/schemas/UsuarioInput'
+                        },
+                        examples: {
+                            usuarioRevisor: {
+                                summary: 'Usuario con rol Revisor',
+                                value: {
+                                    tipo_documento_id: 1,
+                                    rol_ids: [2],
+                                    centro_ids: [1, 2],
+                                    documento: '1234567890',
+                                    nombres: 'Juan Carlos',
+                                    apellidos: 'Pérez García',
+                                    correo: 'juan.perez@example.com',
+                                    telefono: '3001234567',
+                                    direccion: 'Calle 123 # 45-67',
+                                    password_debe_cambiar: true
+                                }
+                            },
+                            usuarioDirectorRegional: {
+                                summary: 'Usuario con rol Director Regional',
+                                value: {
+                                    tipo_documento_id: 1,
+                                    rol_ids: [3],
+                                    regional_id: 1,
+                                    documento: '9876543210',
+                                    nombres: 'María',
+                                    apellidos: 'Rodríguez López',
+                                    correo: 'maria.rodriguez@example.com',
+                                    telefono: '3009876543',
+                                    contrasena: 'Password123!',
+                                    password_debe_cambiar: false
+                                }
+                            },
+                            usuarioAdmin: {
+                                summary: 'Usuario con rol Admin',
+                                value: {
+                                    tipo_documento_id: 1,
+                                    rol_ids: [1],
+                                    documento: '5555555555',
+                                    nombres: 'Admin',
+                                    apellidos: 'Sistema',
+                                    correo: 'admin@example.com'
+                                }
+                            }
                         }
                     }
                 }
@@ -402,7 +445,7 @@ export const usuarioPaths = {
         put: {
             tags: ['Usuario'],
             summary: 'Actualizar un usuario',
-            description: 'Actualiza los datos de un usuario existente',
+            description: 'Actualiza los datos de un usuario existente. Todos los campos son opcionales.',
             security: [{ bearerAuth: [] }],
             parameters: [
                 {
@@ -421,6 +464,43 @@ export const usuarioPaths = {
                     'application/json': {
                         schema: {
                             $ref: '#/components/schemas/UsuarioUpdate'
+                        },
+                        examples: {
+                            actualizarDatosBasicos: {
+                                summary: 'Actualizar datos básicos',
+                                value: {
+                                    nombres: 'Juan Carlos Actualizado',
+                                    telefono: '3001111111',
+                                    direccion: 'Nueva dirección 456'
+                                }
+                            },
+                            cambiarRoles: {
+                                summary: 'Cambiar roles del usuario',
+                                value: {
+                                    rol_ids: [2, 4]
+                                }
+                            },
+                            actualizarCentros: {
+                                summary: 'Actualizar centros asignados',
+                                value: {
+                                    centro_ids: [3, 4, 5]
+                                }
+                            },
+                            actualizarTodo: {
+                                summary: 'Actualización completa',
+                                value: {
+                                    tipo_documento_id: 2,
+                                    rol_ids: [2],
+                                    centro_ids: [1],
+                                    regional_id: 2,
+                                    documento: '9999999999',
+                                    nombres: 'Nuevo Nombre',
+                                    apellidos: 'Nuevo Apellido',
+                                    correo: 'nuevo@example.com',
+                                    telefono: '3002222222',
+                                    direccion: 'Nueva dirección completa'
+                                }
+                            }
                         }
                     }
                 }

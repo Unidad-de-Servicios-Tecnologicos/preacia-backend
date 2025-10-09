@@ -41,43 +41,39 @@ router.get('/list',
 
 // Ruta para crear un nuevo usuario
 router.post('/',
-    [
-        verificarToken,
-        verificarCuentaActiva,
-        verificarRolOPermiso(
-            [RolEnum.ADMIN, RolEnum.DIRECTOR_REGIONAL, RolEnum.ADMINISTRADOR_CENTRO],
-            [PermisoEnum.CREAR_USUARIOS_TODOS, PermisoEnum.CREAR_USUARIOS_REGIONAL, PermisoEnum.CREAR_USUARIOS_CENTRO]
-        )
-    ],
+    verificarToken,
+    verificarCuentaActiva,
+    verificarRolOPermiso(
+        [RolEnum.ADMIN, RolEnum.DIRECTOR_REGIONAL, RolEnum.ADMINISTRADOR_CENTRO],
+        [PermisoEnum.CREAR_USUARIOS_TODOS, PermisoEnum.CREAR_USUARIOS_REGIONAL, PermisoEnum.CREAR_USUARIOS_CENTRO]
+    ),
     registerUserValidator,
     usuarioController.storeUsuario
 );
 
 // Ruta para editar un usuario por ID
 router.put('/:id',
-    [
-        verificarToken,
-        verificarCuentaActiva,
-        verificarRolOPermiso(
-            [RolEnum.ADMIN, RolEnum.DIRECTOR_REGIONAL, RolEnum.ADMINISTRADOR_CENTRO],
-            [PermisoEnum.EDITAR_USUARIOS_TODOS, PermisoEnum.EDITAR_USUARIOS_REGIONAL, PermisoEnum.EDITAR_USUARIOS_CENTRO]
-        )
-    ],
-    [...idParamValidator, ...updateUserValidator],
+    verificarToken,
+    verificarCuentaActiva,
+    verificarRolOPermiso(
+        [RolEnum.ADMIN, RolEnum.DIRECTOR_REGIONAL, RolEnum.ADMINISTRADOR_CENTRO],
+        [PermisoEnum.EDITAR_USUARIOS_TODOS, PermisoEnum.EDITAR_USUARIOS_REGIONAL, PermisoEnum.EDITAR_USUARIOS_CENTRO]
+    ),
+    idParamValidator,
+    updateUserValidator,
     usuarioController.updateUsuario
 );
 
 // Ruta para cambiar el estado de un usuario por id
 router.patch('/:id/estado',
-    [
-        verificarToken,
-        verificarCuentaActiva,
-        verificarRolOPermiso(
-            [RolEnum.ADMIN, RolEnum.DIRECTOR_REGIONAL, RolEnum.ADMINISTRADOR_CENTRO],
-            [PermisoEnum.DESACTIVAR_USUARIOS_TODOS, PermisoEnum.DESACTIVAR_USUARIOS_REGIONAL, PermisoEnum.DESACTIVAR_USUARIOS_CENTRO]
-        )
-    ],
-    [...idParamValidator, ...cambiarEstadoUsuarioValidator],
+    verificarToken,
+    verificarCuentaActiva,
+    verificarRolOPermiso(
+        [RolEnum.ADMIN, RolEnum.DIRECTOR_REGIONAL, RolEnum.ADMINISTRADOR_CENTRO],
+        [PermisoEnum.DESACTIVAR_USUARIOS_TODOS, PermisoEnum.DESACTIVAR_USUARIOS_REGIONAL, PermisoEnum.DESACTIVAR_USUARIOS_CENTRO]
+    ),
+    idParamValidator,
+    cambiarEstadoUsuarioValidator,
     usuarioController.changeUsuarioStatus
 );
 

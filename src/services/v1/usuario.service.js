@@ -161,49 +161,54 @@ export const getListUsuariosService = async (req) => {
  * Servicio para crear un nuevo usuario
  */
 export const storeUsuarioService = async (data, usuarioCreadorId = null) => {
-    // Buscar el tipo de documento
+    // Validar tipo_documento_id
     const tipoDocumento = await TipoDocumento.findOne({
-        where: { nombre: data.tipo_documento, estado: true }
+        where: { id: data.tipo_documento_id, estado: true }
     });
 
     if (!tipoDocumento) {
         throw new Error("El tipo de documento especificado no existe o está inactivo");
     }
 
-    // Procesar roles (puede ser un string o un array)
-    let rolesNombres = [];
-    if (data.roles_nombres && Array.isArray(data.roles_nombres) && data.roles_nombres.length > 0) {
-        rolesNombres = data.roles_nombres;
-    } else if (data.rol_nombre) {
-        rolesNombres = [data.rol_nombre];
-    } else {
-        rolesNombres = ['revisor']; // Rol por defecto
+    // Validar rol_ids (obligatorio)
+    if (!data.rol_ids || !Array.isArray(data.rol_ids) || data.rol_ids.length === 0) {
+        throw new Error("Debe especificar al menos un rol");
     }
+
+    // Convertir rol_ids a números
+    const rolIds = data.rol_ids.map(id => Number(id));
 
     // Buscar todos los roles
     const roles = await Rol.findAll({
         where: { 
-            nombre: rolesNombres,
+            id: rolIds,
             estado: true 
         }
     });
 
-    if (roles.length === 0) {
-        throw new Error("No se encontraron roles válidos");
+    if (roles.length === 0 || roles.length !== rolIds.length) {
+        throw new Error("Uno o más roles especificados no existen o están inactivos");
     }
 
     // Verificar si algún rol es director_regional y requiere regional_id
-    const esDirectorRegional = roles.some(rol => rol.nombre === 'director_regional');
+    const esDirectorRegional = roles.some(rol => rol.nombre === RolEnum.DIRECTOR_REGIONAL);
     if (esDirectorRegional && !data.regional_id) {
         throw new Error("El rol 'director_regional' requiere una regional asignada");
     }
 
-    // Encriptar contraseña
-    const hashedPassword = await Usuario.generatePassword(data.contrasena);
+    // Generar o usar contraseña proporcionada
+    let hashedPassword;
+    if (data.contrasena) {
+        hashedPassword = await Usuario.generatePassword(data.contrasena);
+    } else {
+        // Generar contraseña aleatoria si no se proporciona
+        const randomPassword = Math.random().toString(36).slice(-10) + 'Aa1!';
+        hashedPassword = await Usuario.generatePassword(randomPassword);
+    }
 
     // Crear usuario
     const nuevoUsuario = await Usuario.create({
-        regional_id: data.regional_id || null,
+        regional_id: data.regional_id ? Number(data.regional_id) : null,
         tipo_documento_id: tipoDocumento.id,
         documento: data.documento,
         nombres: data.nombres,
@@ -224,8 +229,9 @@ export const storeUsuarioService = async (data, usuarioCreadorId = null) => {
     await nuevoUsuario.setRoles(roles);
 
     // Asignar centros si se proporcionaron
-    if (data.centros_ids && Array.isArray(data.centros_ids) && data.centros_ids.length > 0) {
-        await nuevoUsuario.setCentros(data.centros_ids);
+    if (data.centro_ids && Array.isArray(data.centro_ids) && data.centro_ids.length > 0) {
+        const centroIds = data.centro_ids.map(id => Number(id));
+        await nuevoUsuario.setCentros(centroIds);
     }
 
     // Obtener el usuario creado con relaciones
@@ -360,36 +366,20 @@ export const updateUsuarioService = async (id, data) => {
         updateData.correo = data.correo;
     }
 
-    // Si se especifican roles, validar y actualizar
-    if (data.roles_nombres && Array.isArray(data.roles_nombres) && data.roles_nombres.length > 0) {
-        const roles = await Rol.findAll({
-            where: { 
-                nombre: data.roles_nombres,
-                estado: true 
-            }
-        });
-        if (roles.length === 0) {
-            throw new Error("No se encontraron roles válidos");
-        }
-        // Los roles se asignarán después de actualizar
-    } else if (data.rol_nombre) {
-        const rol = await Rol.findOne({
-            where: { nombre: data.rol_nombre, estado: true }
-        });
-        if (rol) {
-            // El rol se asignará después de actualizar
-        }
-    }
-
-    // Si se especifica tipo de documento, validar y actualizar
-    if (data.tipo_documento) {
+    // Si se especifica tipo_documento_id, validar y actualizar
+    if (data.tipo_documento_id) {
         const tipoDocumento = await TipoDocumento.findOne({
-            where: { nombre: data.tipo_documento, estado: true }
+            where: { id: data.tipo_documento_id, estado: true }
         });
         if (!tipoDocumento) {
             throw new Error("El tipo de documento especificado no existe o está inactivo");
         }
         updateData.tipo_documento_id = tipoDocumento.id;
+    }
+
+    // Si se especifica regional_id, actualizar
+    if (data.regional_id !== undefined) {
+        updateData.regional_id = data.regional_id ? Number(data.regional_id) : null;
     }
 
     // Actualizar campos simples
@@ -402,27 +392,33 @@ export const updateUsuarioService = async (id, data) => {
     let usuarioActualizado = await updateUsuario(id, updateData);
 
     // Actualizar roles si se especificaron
-    if (data.roles_nombres && Array.isArray(data.roles_nombres) && data.roles_nombres.length > 0) {
+    if (data.rol_ids && Array.isArray(data.rol_ids) && data.rol_ids.length > 0) {
+        const rolIds = data.rol_ids.map(id => Number(id));
         const roles = await Rol.findAll({
             where: { 
-                nombre: data.roles_nombres,
+                id: rolIds,
                 estado: true 
             }
         });
-        if (roles.length > 0) {
-            const usuario = await Usuario.findByPk(id);
-            await usuario.setRoles(roles);
-            usuarioActualizado = await findUsuarioById(id);
+        if (roles.length === 0 || roles.length !== rolIds.length) {
+            throw new Error("Uno o más roles especificados no existen o están inactivos");
         }
-    } else if (data.rol_nombre) {
-        const rol = await Rol.findOne({
-            where: { nombre: data.rol_nombre, estado: true }
-        });
-        if (rol) {
-            const usuario = await Usuario.findByPk(id);
-            await usuario.setRoles([rol]);
-            usuarioActualizado = await findUsuarioById(id);
+        const usuario = await Usuario.findByPk(id);
+        await usuario.setRoles(roles);
+        usuarioActualizado = await findUsuarioById(id);
+    }
+
+    // Actualizar centros si se especificaron
+    if (data.centro_ids !== undefined) {
+        const usuario = await Usuario.findByPk(id);
+        if (Array.isArray(data.centro_ids) && data.centro_ids.length > 0) {
+            const centroIds = data.centro_ids.map(id => Number(id));
+            await usuario.setCentros(centroIds);
+        } else {
+            // Si es un array vacío, quitar todos los centros
+            await usuario.setCentros([]);
         }
+        usuarioActualizado = await findUsuarioById(id);
     }
 
     return {

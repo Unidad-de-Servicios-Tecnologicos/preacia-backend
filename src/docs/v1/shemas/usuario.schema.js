@@ -218,18 +218,32 @@ export const usuarioSchemas = {
     UsuarioInput: {
         type: 'object',
         properties: {
-            tipo_documento: {
-                type: 'string',
-                description: 'Nombre del tipo de documento (ej: "Cédula de Ciudadanía")',
-                example: 'Cédula de Ciudadanía'
+            tipo_documento_id: {
+                type: 'integer',
+                description: 'ID del tipo de documento',
+                example: 1
             },
-            roles_nombres: {
+            rol_ids: {
                 type: 'array',
-                description: 'Nombres de los roles a asignar (opcional)',
+                description: 'IDs de los roles a asignar (obligatorio, al menos uno)',
                 items: {
-                    type: 'string'
+                    type: 'integer'
                 },
-                example: ['Aprendiz', 'Monitor']
+                example: [2, 3]
+            },
+            centro_ids: {
+                type: 'array',
+                description: 'IDs de los centros a asignar (obligatorio para roles revisor y administrador_centro)',
+                items: {
+                    type: 'integer'
+                },
+                example: [1, 2]
+            },
+            regional_id: {
+                type: 'integer',
+                description: 'ID de la regional (obligatorio para rol director_regional)',
+                example: 1,
+                nullable: true
             },
             documento: {
                 type: 'string',
@@ -240,13 +254,13 @@ export const usuarioSchemas = {
             },
             nombres: {
                 type: 'string',
-                maxLength: 50,
+                maxLength: 150,
                 description: 'Nombres del usuario',
                 example: 'Juan Carlos'
             },
             apellidos: {
                 type: 'string',
-                maxLength: 50,
+                maxLength: 150,
                 description: 'Apellidos del usuario',
                 example: 'Pérez García'
             },
@@ -259,13 +273,13 @@ export const usuarioSchemas = {
             },
             telefono: {
                 type: 'string',
-                maxLength: 15,
+                maxLength: 20,
                 description: 'Número de teléfono',
                 example: '3001234567'
             },
             direccion: {
                 type: 'string',
-                maxLength: 100,
+                maxLength: 200,
                 description: 'Dirección de residencia',
                 example: 'Calle 123 # 45-67'
             },
@@ -274,36 +288,48 @@ export const usuarioSchemas = {
                 minLength: 8,
                 maxLength: 100,
                 format: 'password',
-                description: 'Contraseña (mínimo 8 caracteres, debe incluir mayúscula, minúscula, número y carácter especial)',
+                description: 'Contraseña (opcional, si no se proporciona se genera automáticamente)',
                 example: 'P@ssw0rd123'
             },
-            confirmar_contrasena: {
-                type: 'string',
-                minLength: 8,
-                maxLength: 100,
-                format: 'password',
-                description: 'Confirmación de contraseña',
-                example: 'P@ssw0rd123'
+            password_debe_cambiar: {
+                type: 'boolean',
+                description: 'Indica si el usuario debe cambiar su contraseña en el próximo inicio de sesión',
+                example: true,
+                default: true
             }
         },
-        required: ['tipo_documento', 'documento', 'nombres', 'apellidos', 'correo', 'contrasena', 'confirmar_contrasena']
+        required: ['tipo_documento_id', 'rol_ids', 'documento', 'nombres', 'apellidos', 'correo']
     },
 
     UsuarioUpdate: {
         type: 'object',
         properties: {
-            tipo_documento: {
-                type: 'string',
-                description: 'Nombre del tipo de documento',
-                example: 'Cédula de Ciudadanía'
+            tipo_documento_id: {
+                type: 'integer',
+                description: 'ID del tipo de documento',
+                example: 1
             },
-            roles_nombres: {
+            rol_ids: {
                 type: 'array',
-                description: 'Nombres de los roles a asignar',
+                description: 'IDs de los roles a asignar (opcional)',
                 items: {
-                    type: 'string'
+                    type: 'integer'
                 },
-                example: ['Aprendiz', 'Monitor']
+                example: [2, 3]
+            },
+            centro_ids: {
+                type: 'array',
+                description: 'IDs de los centros a asignar (opcional)',
+                items: {
+                    type: 'integer'
+                },
+                example: [1, 2]
+            },
+            regional_id: {
+                type: 'integer',
+                description: 'ID de la regional (opcional)',
+                example: 1,
+                nullable: true
             },
             documento: {
                 type: 'string',
@@ -314,13 +340,13 @@ export const usuarioSchemas = {
             },
             nombres: {
                 type: 'string',
-                maxLength: 50,
+                maxLength: 150,
                 description: 'Nombres del usuario',
                 example: 'Juan Carlos'
             },
             apellidos: {
                 type: 'string',
-                maxLength: 50,
+                maxLength: 150,
                 description: 'Apellidos del usuario',
                 example: 'Pérez García'
             },
@@ -333,13 +359,13 @@ export const usuarioSchemas = {
             },
             telefono: {
                 type: 'string',
-                maxLength: 15,
+                maxLength: 20,
                 description: 'Número de teléfono',
                 example: '3001234567'
             },
             direccion: {
                 type: 'string',
-                maxLength: 100,
+                maxLength: 200,
                 description: 'Dirección de residencia',
                 example: 'Calle 123 # 45-67'
             }
