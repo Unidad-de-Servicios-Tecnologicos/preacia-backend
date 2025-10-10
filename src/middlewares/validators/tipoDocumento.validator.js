@@ -11,8 +11,14 @@ const idParamValidator = [
 
 const cambiarEstadoValidator = [
     body('estado')
-        .isIn(Object.values(EstadoEnum))
-        .withMessage('El estado debe ser un valor enum (ACTIVO o INACTIVO).')
+        .custom((value) => {
+            // Aceptar booleanos true/false o strings 'true'/'false' o los valores del enum
+            if (typeof value === 'boolean') return true;
+            if (value === 'true' || value === 'false') return true;
+            if (Object.values(EstadoEnum).includes(value)) return true;
+            return false;
+        })
+        .withMessage('El estado debe ser booleano o string "true"/"false" o un valor válido del enum.')
         .notEmpty()
         .withMessage('El estado es obligatorio.')
 ];
@@ -29,8 +35,13 @@ const createTipoDocumentoValidator = [
         .trim(),
 
     body('estado')
-        .isIn(Object.values(EstadoEnum))
-        .withMessage('El estado debe ser un valor enum (ACTIVO o INACTIVO).')
+        .custom((value) => {
+            if (typeof value === 'boolean') return true;
+            if (value === 'true' || value === 'false') return true;
+            if (Object.values(EstadoEnum).includes(value)) return true;
+            return false;
+        })
+        .withMessage('El estado debe ser booleano o string "true"/"false" o un valor válido del enum.')
         .notEmpty()
         .withMessage('El estado es obligatorio.')
         .trim(),
@@ -50,8 +61,13 @@ const updateTipoDocumentoValidator = [
 
     body('estado')
         .optional()
-        .isIn(Object.values(EstadoEnum))
-        .withMessage('El estado debe ser un valor enum (ACTIVO o INACTIVO).')
+        .custom((value) => {
+            if (typeof value === 'boolean') return true;
+            if (value === 'true' || value === 'false') return true;
+            if (Object.values(EstadoEnum).includes(value)) return true;
+            return false;
+        })
+        .withMessage('El estado debe ser booleano o string "true"/"false" o un valor válido del enum.')
         .trim(),
 ];
 

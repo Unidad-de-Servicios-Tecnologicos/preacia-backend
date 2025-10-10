@@ -122,10 +122,10 @@ export const showTipoDocumento = async (req, res) => {
     const tipoDocumento = await showTipoDocumentoService(req.params.id);
 
     if (!tipoDocumento) {
-      return errorResponse(res, "No existe un tipo de documento con el código", 404, [
+      return errorResponse(res, "No existe un tipo de documento con el id", 404, [
         {
           code: "TIPO_DOCUMENTO_NOT_FOUND",
-          detail: `No existe un tipo de documento con código ${req.params.codigo}`,
+          detail: `No existe un tipo de documento con id ${req.params.id}`,
         },
       ]);
     }
@@ -160,19 +160,19 @@ export const updateTipoDocumento = async (req, res) => {
   }
 
   try {
-    const tipoDocumento = await updateTipoDocumentoService(req.params.codigo, req.body);
+    const tipoDocumento = await updateTipoDocumentoService(req.params.id, req.body);
 
     if (!tipoDocumento) {
       return res.status(404).json({
         success: false,
-        message: `No existe un tipo de documento con código ${req.params.codigo}`
+        message: `No existe un tipo de documento con id ${req.params.id}`
       });
     }
 
     return res.status(200).json({
       success: true,
       message: 'Tipo de documento actualizado exitosamente',
-      data: centro
+      data: tipoDocumento
     });
   } catch (error) {
     console.error("Error al actualizar el tipo de documento:", error);

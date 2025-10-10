@@ -4,6 +4,8 @@ import Permiso from './permiso.model.js';
 import UsuarioPermiso from './usuarioPermiso.model.js';
 import RolPermiso from './rolPermiso.model.js';
 import TipoDocumento from './tipoDocumento.model.js';
+import Centro from './centro.model.js';
+import CentroUsuario from './centroUsuario.model.js';
 
 
 
@@ -58,6 +60,21 @@ Permiso.belongsToMany(Usuario, {
   as: 'usuarios',
 });
 
+// Asociaciones entre Centros y Usuarios (N:M) mediante CentroUsuario
+Usuario.belongsToMany(Centro, {
+  through: CentroUsuario,
+  foreignKey: 'usuario_id',
+  otherKey: 'centro_id',
+  as: 'centros',
+});
+
+Centro.belongsToMany(Usuario, {
+  through: CentroUsuario,
+  foreignKey: 'centro_id',
+  otherKey: 'usuario_id',
+  as: 'usuarios',
+});
+
 
 // Exportar todos los modelos
 export {
@@ -66,5 +83,7 @@ export {
   Permiso,
   UsuarioPermiso,
   RolPermiso,
-  TipoDocumento
+  TipoDocumento,
+  Centro, 
+  CentroUsuario
 };

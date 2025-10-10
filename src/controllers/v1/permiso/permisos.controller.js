@@ -11,7 +11,7 @@ import {
     // getAllPermisos,
     // cambiarEstadoPermiso,
     // getPermisosPorModulo
-} from "../../../services/v1/permiso.service.js";
+} from "../../../services/v1/permisos.service.js";
 //import { validationResult } from "express-validator";
 
 /**

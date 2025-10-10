@@ -1,5 +1,5 @@
 import { Op } from "sequelize";
-import Permiso from "../models/permisos.model.js";
+import Permiso from "../models/permiso.model.js";
 
 /**
  * Repositorio para obtener permisos con filtros, orden y paginación.

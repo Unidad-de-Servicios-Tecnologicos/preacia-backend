@@ -50,18 +50,6 @@ export const getTipoDocumentosRepository = async ({
 
   const { count, rows } = await TipoDocumento.findAndCountAll({
     where: whereClause,
-    include: [
-      {
-        model: TipoDocumento,
-        as: 'tipo_documento',
-        attributes: ['id', 'nombre']
-      },
-      {
-        model: TipoDocumento,
-        as: 'tipo_documento',
-        attributes: ['id', 'nombre']
-      }
-    ],
     order: [[sortBy, order]],
     limit: parseInt(limit),
     offset: parseInt(offset),

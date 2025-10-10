@@ -66,7 +66,7 @@ const verificarRolOPermiso = (rolesPermitidos = [], permisosRequeridos = []) => 
     }
 
     // SUPERADMINISTRADOR: acceso total
-    if (usuario.rol.nombre === 'SuperAdministrador') {
+    if (usuario.rol.nombre === 'Administrador') {
       return next();
     }
 

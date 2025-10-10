@@ -78,12 +78,14 @@ export const getListTipoDocumentosService = async (estado, sortBy = "id", order 
  * Servicio para crear un nuevo tipo de documento.
  */
 export const storeTipoDocumentoService = async (data) => {
-    // Verificar si ya existe un centro con el mismo código
-    const existingTipoDocumentoById = await findTipoDocumentoByIdRepository(data.id);
-    if (existingTipoDocumentoById) {
-        const error = new Error(`El ID ${data.id} ya está registrado. No se puede repetir el ID.`);
-        error.code = "DUPLICATE_TIPO_DOCUMENTO_ID";
-        throw error;
+    // Verificar si ya existe un tipo de documento con el mismo ID (solo si se proporcionó)
+    if (data.id !== undefined && data.id !== null) {
+        const existingTipoDocumentoById = await findTipoDocumentoByIdRepository(data.id);
+        if (existingTipoDocumentoById) {
+            const error = new Error(`El ID ${data.id} ya está registrado. No se puede repetir el ID.`);
+            error.code = "DUPLICATE_TIPO_DOCUMENTO_ID";
+            throw error;
+        }
     }
 
     // Verificar si ya existe un tipo de documento con el mismo nombre

@@ -3,7 +3,7 @@ import {
     getPermissionsRepository,
     getListPermissionsRepository,
     showPermissionRepository,
-} from "../../repositories/permiso.repository.js";
+} from "../../repositories/permisos.repository.js";
 
 
 /**
